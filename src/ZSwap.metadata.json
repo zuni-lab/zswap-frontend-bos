@@ -1,0 +1,15 @@
+{
+  "description": "ZSwap Protocol is a decentralized exchange solution built on the NEAR Protocol.",
+  "image": {
+    "ipfs_cid": "bafkreigio67zz63ozsrtl2ydvczmbsx2dgblv2rqzxrizry7zycs3yco7q"
+  },
+  "name": "ZSwap -- Decentralized exchange on NEAR Protocol",
+  "tags": {
+    "defi": "",
+    "near": "",
+    "liquid": "",
+    "staking": "",
+    "app": "",
+    "zswap": ""
+  }
+}
