@@ -6,6 +6,7 @@ const NavigationWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 60px;
+  padding: 0 20px;
 `;
 
 const MenuItemWrapper = styled.div`
@@ -13,10 +14,15 @@ const MenuItemWrapper = styled.div`
   cursor: pointer;
 `;
 const MenuItem = styled.div`
-  font-size: 12px;
+  font-size: 16px;
   font-weight: bold;
   margin-left: 20px;
   transition: all 0.3s ease-in-out;
+  padding: 4px 8px;
+  border-radius: 8px;
+  box-shadow: ${(props) =>
+    props.active &&
+    "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);"};
   &:hover {
     opacity: 0.3;
   }
@@ -48,15 +54,40 @@ const BrandLogo = () => (
     <div>ZSwap</div>
   </a>
 );
-
 return (
   <NavigationWrapper>
     <BrandLogo />
     <MenuItemWrapper>
-      <MenuItem onClick={() => props.updatePage("swap")}>Swap</MenuItem>
-      <MenuItem onClick={() => props.updatePage("pool")}>Pool</MenuItem>
-      <MenuItem onClick={() => props.updatePage("tokens")}>Tokens</MenuItem>
-      <MenuItem onClick={() => props.updatePage("account")}>
+      <MenuItem
+        onClick={() => {
+          props.updatePage("swap");
+        }}
+        active={props.page === "swap"}
+      >
+        Swap
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          props.updatePage("pools");
+        }}
+        active={props.page === "pools"}
+      >
+        Pools
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          props.updatePage("tokens");
+        }}
+        active={props.page === "tokens"}
+      >
+        Tokens
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          props.updatePage("account");
+        }}
+        active={props.page === "account"}
+      >
         My Account
       </MenuItem>
     </MenuItemWrapper>

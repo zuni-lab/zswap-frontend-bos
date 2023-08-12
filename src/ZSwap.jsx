@@ -1,5 +1,26 @@
 // MIT License: https://github.com/DV-Lab/zswap-frontend-bos/blob/main/LICENSE
 
+/* FOR STYLING */
+const MainLayout = styled.div`
+  width: 100%;
+  height: 80vh;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  padding: 12px;
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+`;
+
+const Container = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  animation: sliding 0.6s linear;
+`;
+
 /** common lib start */
 const accountId = props.accountId || context.accountId;
 const isSignedIn = !!accountId;
@@ -45,17 +66,6 @@ State.init({
   nearBalance: "",
   unstakeInfo: {},
 });
-
-const Main = styled.div`
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  padding: 20px;
-
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-`;
 
 const updateTabName = (tabName) =>
   State.update({
@@ -180,7 +190,7 @@ function onLoad(data) {
 
 const SwapView = () => {
   return (
-    <Main>
+    <Container>
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
@@ -214,13 +224,13 @@ const SwapView = () => {
           }}
         />
       )}
-    </Main>
+    </Container>
   );
 };
 
 const PoolView = () => {
   return (
-    <Main>
+    <Container>
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
@@ -254,7 +264,7 @@ const PoolView = () => {
           }}
         />
       )}
-    </Main>
+    </Container>
   );
 };
 const AccountView = () => {
@@ -294,7 +304,7 @@ const TokenView = () => {
 const body =
   state.page === "swap" ? (
     <SwapView />
-  ) : state.page === "pool" ? (
+  ) : state.page === "pools" ? (
     <PoolView />
   ) : state.page == "tokens" ? (
     <TokenView />
@@ -303,7 +313,7 @@ const body =
   );
 
 return (
-  <Main>
+  <MainLayout>
     <Widget
       src={`${config.ownerId}/widget/ZSwap.Data.Unstake`}
       props={{ config, accountDetails, onLoad }}
@@ -312,8 +322,9 @@ return (
       src={`${config.ownerId}/widget/ZSwap.Layout.Navigation`}
       props={{
         updatePage,
+        page: state.page,
       }}
     />
     {body}
-  </Main>
+  </MainLayout>
 );

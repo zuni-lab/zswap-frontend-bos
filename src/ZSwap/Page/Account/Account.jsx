@@ -50,7 +50,7 @@ const TokenValue = styled.div`
 const Main = styled.div`
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 80vh;
   padding: 20px;
 
   display: flex;
