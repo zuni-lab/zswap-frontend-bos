@@ -11,25 +11,31 @@ We use [BOS Loader](https://docs.near.org/bos/dev/bos-loader) to enable instant 
 
 1. [Download and install BOS Loader](https://github.com/near/bos-loader/releases)
 
-> Linux / Mac: Install prebuilt binaries via shell script
->
-> ```bash
-> # WARNING: this installer is experimental
-> curl --proto '=https' --tlsv1.2 -LsSf https://github.com/mpeterdev/bos-loader/releases/download/v0.6.0/bos-loader-v0.6.0-installer.sh | sh
-> ```
->
-> Windows: Install prebuilt binaries via powershell script
->
-> ```bash
-> # WARNING: this installer is experimental
-> irm https://github.com/mpeterdev/bos-loader/releases/download/v0.6.0/bos-loader-v0.6.0-installer.ps1 | iex
-> ```
+- Linux / Mac: Install prebuilt binaries via shell script
 
-2. Open https://test.near.org/flags, and set the loader URL to http://127.0.0.1:3030
-3. Clone repository: `git clone https://github.com/DV-Lab/zswap-frontend-bos`
-4. Install dependencies: `cd ZSwap-bos-components && yarn`
-5. Launch testnet [preview page](https://test.near.org/ZSwap-builder.testnet/widget/ZSwap) and BOS loader: `yarn dev`
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/mpeterdev/bos-loader/releases/download/v0.6.0/bos-loader-v0.6.0-installer.sh | sh
+```
+
+2. Open https://test.near.org/flags, and set the loader URL to 
+```bash
+http://127.0.0.1:3030
+```
+3. Clone repository: 
+```bash
+git clone git@github.com:DV-Lab/zswap-frontend-bos.git
+```
+4. Install and run
+```bash
+yarn install
+```
+
+```bash
+yarn dev
+```
+5. Launch testnet [preview page](https://test.near.org/ZSwap-builder.testnet/widget/ZSwap)
 6. Modify ZSwap components code, and refresh preview page to view the latest change. Please notice that because **hot reload** is not ready in BOS loader, you need to refresh the preview page in browser after code change.
+
 7. [`prettier`](https://prettier.io/) is configured in Git pre-commit hook with [husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/okonet/lint-staged) to automatically format the modified components code.
 
 ## Folder Structure
