@@ -3,9 +3,8 @@
 const InputWrapper = styled.div`
   width: 100%;
   border-radius: 10px;
-  background: #0d0d2b;
   padding: 20px;
-  color: white;
+  color: black;
 `;
 
 const HorizentalLine = styled.hr`
@@ -18,8 +17,8 @@ const HorizentalLine = styled.hr`
 `;
 
 const BalanceContainer = styled.div`
-  color: #c1c1c1;
-  font-size: 14px;
+  color: #0d9488;
+  font-size: 16px;
   display: flex;
   justify-content: space-between;
   .error {
@@ -30,6 +29,7 @@ const BalanceContainer = styled.div`
 const NEARInputContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  gap: 16px;
 `;
 
 const NEARTexture = styled.div`
@@ -45,7 +45,7 @@ const LogoWithText = styled.div`
 
 const MaxTexture = styled.div`
   font-size: 24px;
-  color: #4451fd;
+  color: #0d9488;
   cursor: pointer;
 `;
 
@@ -64,27 +64,41 @@ return (
         />
         <NEARTexture>{props.iconName}</NEARTexture>
       </LogoWithText>
-      <input
+      <div
         style={{
-          "text-align": "right",
-          width: "100%",
-          background: "transparent",
-          border: "0",
-          "font-size": "16px",
-          "font-weight": "bold",
-          color: props.inputError ? "#ec6868" : "white",
-          outline: "none",
-          "box-shadow": "none",
-          "margin-right": "16px",
-
-          "-webkit-appearance": "none",
-          "-moz-appearance": "textfield",
+          display: "flex",
+          gap: "16px",
+          flex: "1",
         }}
-        placeholder={props.placeholder}
-        value={props.value}
-        onChange={props.onChange}
-      />
-      <MaxTexture onClick={props.onClickMax}>MAX</MaxTexture>
+      >
+        <input
+          style={{
+            "text-align": "right",
+            background: "transparent",
+            border: "1px solid #0d9488",
+            "font-size": "16px",
+            "font-weight": "bold",
+            color: props.inputError ? "#ec6868" : "black",
+            "margin-right": "16px",
+            outlineColor: "grey",
+            "--webkit-appearance": "none",
+            "--moz-appearance": "textfield",
+            cursor: "auto",
+            flex: 1,
+            boxShadow: "none",
+          }}
+          placeholder={props.placeholder}
+          value={props.value}
+          onChange={props.onChange}
+        />
+        <div
+          style={{
+            width: "10%",
+          }}
+        >
+          <MaxTexture onClick={props.onClickMax}>MAX</MaxTexture>
+        </div>
+      </div>
     </NEARInputContainer>
     <HorizentalLine />
     <BalanceContainer>

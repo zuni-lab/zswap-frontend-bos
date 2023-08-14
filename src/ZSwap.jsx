@@ -1,5 +1,55 @@
 // MIT License: https://github.com/DV-Lab/zswap-frontend-bos/blob/main/LICENSE
 
+/* FOR STYLING */
+const App = styled.div`
+  width: 100%;
+  height: 80vh;
+  padding: 8px;
+`;
+
+const MainLayout = styled.div`
+  width: 100%;
+  height: calc(100% - 8px);
+  border-radius: 20px;
+  box-sizing: border-box;
+  // box-shadow: 1px 6px 4px -1px rgba(60, 216, 157, 0.3),
+  //   1px 2px 4px -2px rgba(60, 216, 157, 0.5);
+`;
+
+const Container = styled.div`
+  width: 100%;
+  margin-top: 20px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const OverflowContainer = styled.div`
+  width: 100%;
+  height: 56vh;
+  padding: 4px 8px;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  &::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.1);
+    background-color: transparent;
+    border-radius: 10px;
+    margin-top: 0px;
+    margin-left: 4px;
+  }
+  &::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #3cd89d;
+    border: 1px solid rgba(252, 254, 231, 1);
+  }
+`;
+
 /** common lib start */
 const accountId = props.accountId || context.accountId;
 const isSignedIn = !!accountId;
@@ -45,17 +95,6 @@ State.init({
   nearBalance: "",
   unstakeInfo: {},
 });
-
-const Main = styled.div`
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  padding: 20px;
-
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-`;
 
 const updateTabName = (tabName) =>
   State.update({
@@ -180,7 +219,7 @@ function onLoad(data) {
 
 const SwapView = () => {
   return (
-    <Main>
+    <Container>
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
@@ -188,39 +227,41 @@ const SwapView = () => {
           description: "Buy, sell, and explore tokens and NFTs",
         }}
       />
-      <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} />
-      <Widget
-        src={`${config.ownerId}/widget/ZSwap.Page.Swap.Tab`}
-        props={{
-          tabName: state.tabName,
-          updateTabName,
-        }}
-      />
-      {state.tabName === "stake" && (
+      <OverflowContainer>
+        <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} />
         <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Buy.Buy`}
-          props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
-        />
-      )}
-      {state.tabName === "unstake" && (
-        <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Sell.Sell`}
+          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Tab`}
           props={{
-            config,
-            zswapBalance,
-            unstakeInfo: state.unstakeInfo,
-            updateAccountInfo,
-            updatePage,
+            tabName: state.tabName,
+            updateTabName,
           }}
         />
-      )}
-    </Main>
+        {state.tabName === "stake" && (
+          <Widget
+            src={`${config.ownerId}/widget/ZSwap.Page.Swap.Buy.Buy`}
+            props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
+          />
+        )}
+        {state.tabName === "unstake" && (
+          <Widget
+            src={`${config.ownerId}/widget/ZSwap.Page.Swap.Sell.Sell`}
+            props={{
+              config,
+              zswapBalance,
+              unstakeInfo: state.unstakeInfo,
+              updateAccountInfo,
+              updatePage,
+            }}
+          />
+        )}
+      </OverflowContainer>
+    </Container>
   );
 };
 
 const PoolView = () => {
   return (
-    <Main>
+    <Container>
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
@@ -254,7 +295,26 @@ const PoolView = () => {
           }}
         />
       )}
-    </Main>
+    </Container>
+  );
+};
+
+const TokenView = () => {
+  return (
+    <Container>
+      <Widget
+        src={`${config.ownerId}/widget/ZSwap.Page.Tokens.Tokens`}
+        props={{
+          config,
+          nearBalance,
+          zswapBalance,
+          unstakeInfo: state.unstakeInfo,
+          updatePage,
+          updateTabName,
+          updateAccountInfo,
+        }}
+      />
+    </Container>
   );
 };
 const AccountView = () => {
@@ -274,27 +334,10 @@ const AccountView = () => {
   );
 };
 
-const TokenView = () => {
-  return (
-    <Widget
-      src={`${config.ownerId}/widget/ZSwap.Page.Tokens.Tokens`}
-      props={{
-        config,
-        nearBalance,
-        zswapBalance,
-        unstakeInfo: state.unstakeInfo,
-        updatePage,
-        updateTabName,
-        updateAccountInfo,
-      }}
-    />
-  );
-};
-
 const body =
   state.page === "swap" ? (
     <SwapView />
-  ) : state.page === "pool" ? (
+  ) : state.page === "pools" ? (
     <PoolView />
   ) : state.page == "tokens" ? (
     <TokenView />
@@ -303,17 +346,20 @@ const body =
   );
 
 return (
-  <Main>
-    <Widget
-      src={`${config.ownerId}/widget/ZSwap.Data.Unstake`}
-      props={{ config, accountDetails, onLoad }}
-    />
-    <Widget
-      src={`${config.ownerId}/widget/ZSwap.Layout.Navigation`}
-      props={{
-        updatePage,
-      }}
-    />
-    {body}
-  </Main>
+  <App>
+    <MainLayout>
+      <Widget
+        src={`${config.ownerId}/widget/ZSwap.Data.Unstake`}
+        props={{ config, accountDetails, onLoad }}
+      />
+      <Widget
+        src={`${config.ownerId}/widget/ZSwap.Layout.Navigation`}
+        props={{
+          updatePage,
+          page: state.page,
+        }}
+      />
+      {body}
+    </MainLayout>
+  </App>
 );

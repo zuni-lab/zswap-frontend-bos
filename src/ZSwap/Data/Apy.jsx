@@ -12,8 +12,9 @@ function getAPY() {
 const apy = getAPY();
 
 const APYContainer = styled.div`
-  font-size: 20px;
+  font-size: 18px;
   margin: 12px 0;
+  text-align: center;
   span {
     margin-left: 12px;
     font-weight: bold;
