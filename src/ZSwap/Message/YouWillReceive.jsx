@@ -1,16 +1,22 @@
 // MIT License: https://github.com/DV-Lab/zswap-frontend-bos/blob/main/LICENSE
 
 const YouWillReceive = styled.div`
-  color: white;
+  color: gray;
   display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  margin-top: 16px;
+  justify-content: center;
+  font-size: 16px;
+  gap: 4px;
 `;
 
 return (
   <YouWillReceive>
-    <p>You will receive </p>
-    <p>{props.text}</p>
+    <p style={{}}>You will receive: </p>
+    <p
+      style={{
+        color: "#0d9488",
+      }}
+    >
+      {props.text}
+    </p>
   </YouWillReceive>
 );

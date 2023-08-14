@@ -367,7 +367,7 @@ const StakeFormWrapper = styled.div`
   width: 100%;
   max-width: 500px;
   padding: 20px;
-  background: #0f0f31;
+  background: black;
   border-radius: 10px;
 `;
 

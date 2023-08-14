@@ -176,11 +176,14 @@ const receivedZswap = (
 const formattedReceivedZswap = formatAmount(receivedZswap);
 
 const StakeFormWrapper = styled.div`
-  width: 100%;
-  max-width: 500px;
+  width: 80%;
+  height: 100%;
   padding: 20px;
-  background: #0f0f31;
   border-radius: 10px;
+  box-shadow: 1px 2px 6px -2px rgba(60, 216, 157, 0.5),
+    1px 2px 6px -2px rgba(60, 216, 157, 0.5);
+  padding-bottom: 4px;
+  color: black;
 `;
 
 return (
@@ -200,16 +203,21 @@ return (
       }}
     />
     <Widget
+      src={`${config.ownerId}/widget/ZSwap.Message.YouWillReceive`}
+      props={{ text: `${formattedReceivedZswap} ZSwap` }}
+    />
+    <Widget
       src={`${config.ownerId}/widget/ZSwap.Element.Button`}
       props={{
         onClick: onClickStake,
         disabled: disabledStakeButton,
         text: "Buy",
+        width: "60%",
+        styles: {
+          display: "flex",
+          justifyContent: "center",
+        },
       }}
-    />
-    <Widget
-      src={`${config.ownerId}/widget/ZSwap.Message.YouWillReceive`}
-      props={{ text: `${formattedReceivedZswap} ZSwap` }}
     />
   </StakeFormWrapper>
 );

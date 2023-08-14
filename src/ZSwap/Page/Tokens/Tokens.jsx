@@ -21,7 +21,6 @@ const MyAccountContent = styled.div`
 const MyAccountCardWrapper = styled.div`
   border-radius: 15px;
   background: #12123f;
-
   padding: 24px 20px;
   width: 100%;
   display: flex;
@@ -31,7 +30,6 @@ const MyAccountCardWrapper = styled.div`
 const MyAccountCardGroupWrapper = styled.div`
   border-radius: 15px;
   background: #12123f;
-
   padding: 24px 20px;
   width: 100%;
 `;
@@ -50,9 +48,7 @@ const TokenValue = styled.div`
 const Main = styled.div`
   position: relative;
   width: 100%;
-  height: 100vh;
   padding: 20px;
-
   display: flex;
   align-items: center;
   flex-direction: column;
