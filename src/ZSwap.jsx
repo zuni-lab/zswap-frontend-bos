@@ -303,17 +303,35 @@ const TokenView = () => {
   return (
     <Container>
       <Widget
-        src={`${config.ownerId}/widget/ZSwap.Page.Tokens.Tokens`}
+        src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
-          config,
-          nearBalance,
-          zswapBalance,
-          unstakeInfo: state.unstakeInfo,
-          updatePage,
-          updateTabName,
-          updateAccountInfo,
+          title: "All tokens here",
+          description: "Select a token to view more details",
         }}
       />
+      <div
+        style={{
+          marginTop: "20px",
+          width: "100%",
+          marginTop: "20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Widget
+          src={`${config.ownerId}/widget/ZSwap.Page.Tokens.Tokens`}
+          props={{
+            config,
+            nearBalance,
+            zswapBalance,
+            unstakeInfo: state.unstakeInfo,
+            updatePage,
+            updateTabName,
+            updateAccountInfo,
+          }}
+        />
+      </div>
     </Container>
   );
 };
