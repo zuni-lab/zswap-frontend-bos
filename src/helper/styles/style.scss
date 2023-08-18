@@ -1,0 +1,44 @@
+// colors
+$color-primary: #3CD89D;
+$color-primary-rgba: rgba(60, 216, 157, 1);
+$color-teal-600: #0d9488;
+$color-tab-container-background: black --var(--color-primary-rgba);
+$color-gray-50 :#f9fafb;
+$color-gray-100: #f3f4f6;
+$color-gray-200: #e5e7eb;
+$color-gray-300: #d1d5db;
+$color-gray-400: #9ca3af;
+$color-gray-500: #6b7280;
+$color-gray-700: #374151;
+$color-gray-800: #1f2937;
+$color-gray-900: #111827;
+$color-gray-950: #030712;
+$color-gray-tiny: rgba(0, 0, 0, 0.05);
+
+
+
+
+
+
+.mainLayout {
+  width: 100%;
+  min-height: 100vh;
+  height: 100%;
+  background-image: url("https://raw.githubusercontent.com/DV-Lab/zswap-frontend/main/public/background/default.svg");
+  background-position: center 20%;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  text-align: "right";
+background: "transparent";
+font-size: 16px;
+font-weight: bold;
+// color: props.inputError ? #ec6868 : black;
+margin-right: 16px;
+outline-color: grey;
+--webkit-appearance: none;
+--moz-appearance: textfield;
+cursor: auto;
+flex: 1;
+}
+

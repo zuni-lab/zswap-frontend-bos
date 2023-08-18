@@ -90,7 +90,7 @@ function getConfig(network) {
 const config = getConfig(context.networkId);
 
 State.init({
-  tabName: "stake", // stake | unstake
+  tabName: "SWAP", // SWAP | BUY
   page: "swap", // "swap" | "pool" | "tokens" | "account"
   nearBalance: "",
   unstakeInfo: {},
@@ -236,9 +236,9 @@ const SwapView = () => {
             updateTabName,
           }}
         />
-        {state.tabName === "stake" && (
+        {state.tabName === "SWAP" && (
           <Widget
-            src={`${config.ownerId}/widget/ZSwap.Page.Swap.Buy.Buy`}
+            src={`${config.ownerId}/widget/ZSwap.Page.Swap.MainSwap`}
             props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
           />
         )}
