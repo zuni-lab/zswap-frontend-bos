@@ -2,6 +2,7 @@
 
 /* FOR STYLING */
 const App = styled.div`
+  position: relative;
   width: 100%;
   height: 80vh;
   padding: 8px;
@@ -12,8 +13,6 @@ const MainLayout = styled.div`
   height: calc(100% - 8px);
   border-radius: 20px;
   box-sizing: border-box;
-  // box-shadow: 1px 6px 4px -1px rgba(60, 216, 157, 0.3),
-  //   1px 2px 4px -2px rgba(60, 216, 157, 0.5);
 `;
 
 const Container = styled.div`
@@ -265,36 +264,14 @@ const PoolView = () => {
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
-          title: "Your active liquidity positions will appear here.",
+          title: "Pools",
           description: "",
         }}
       />
-      <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} />
       <Widget
-        src={`${config.ownerId}/widget/ZSwap.Page.Swap.Tab`}
-        props={{
-          tabName: state.tabName,
-          updateTabName,
-        }}
+        src={`${config.ownerId}/widget/ZSwap.Page.Pools.Pools`}
+        props={{ config }}
       />
-      {state.tabName === "stake" && (
-        <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Buy.Buy`}
-          props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
-        />
-      )}
-      {state.tabName === "unstake" && (
-        <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Sell.Sell`}
-          props={{
-            config,
-            zswapBalance,
-            unstakeInfo: state.unstakeInfo,
-            updateAccountInfo,
-            updatePage,
-          }}
-        />
-      )}
     </Container>
   );
 };
@@ -319,18 +296,7 @@ const TokenView = () => {
           alignItems: "center",
         }}
       >
-        <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Tokens.Tokens`}
-          props={{
-            config,
-            nearBalance,
-            zswapBalance,
-            unstakeInfo: state.unstakeInfo,
-            updatePage,
-            updateTabName,
-            updateAccountInfo,
-          }}
-        />
+        <Widget src={`${config.ownerId}/widget/ZSwap.Page.Tokens.Tokens`} />
       </div>
     </Container>
   );

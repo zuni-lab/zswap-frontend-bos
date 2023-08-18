@@ -136,8 +136,8 @@ const SwapWrapper = styled.div`
   height: 100%;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 1px 2px 6px -2px rgba(60, 216, 157, 0.5),
-    1px 2px 6px -2px rgba(60, 216, 157, 0.5);
+  box-shadow: 1px 2px 4px -1px rgba(60, 216, 157, 0.5),
+    1px 2px 4px -1px rgba(60, 216, 157, 0.5);
   padding-bottom: 4px;
   color: black;
 `;
