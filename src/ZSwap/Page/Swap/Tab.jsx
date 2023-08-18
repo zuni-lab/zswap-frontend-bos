@@ -28,20 +28,25 @@ const TabItem = styled.div`
   border-width: 2px;
 `;
 
-const tabName = props.tabName || "stake";
+const TAB_RECORD = {
+  SWAP: "SWAP",
+  BUY: "BUY",
+};
+const tabName = props.tabName || TAB_RECORD.SWAP;
+
 return (
   <TabContainer>
     <TabItem
-      active={tabName === "stake"}
-      onClick={() => props.updateTabName("stake")}
+      active={tabName === TAB_RECORD.SWAP}
+      onClick={() => props.updateTabName(TAB_RECORD.SWAP)}
     >
-      Stake
+      {TAB_RECORD.SWAP}
     </TabItem>
     <TabItem
-      active={tabName === "unstake"}
-      onClick={() => props.updateTabName("unstake")}
+      active={tabName === TAB_RECORD.BUY}
+      onClick={() => props.updateTabName(TAB_RECORD.BUY)}
     >
-      Unstake
+      {TAB_RECORD.BUY}
     </TabItem>
   </TabContainer>
 );
