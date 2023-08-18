@@ -1,14 +1,5 @@
 // MIT License: https://github.com/DV-Lab/zswap-frontend-bos/blob/main/LICENSE
 
-const accountId = props.accountId || context.accountId;
-
-const { config, nearBalance, updatePage, updateTabName, updateAccountInfo } =
-  props;
-
-if (!config) {
-  return "Component cannot be loaded. Missing `config` props";
-}
-
 State.init({
   data: {},
 });
@@ -22,8 +13,8 @@ const Main = styled.div`
   gap: 8px;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 1px 2px 6px -2px rgba(60, 216, 157, 0.5),
-    1px 2px 6px -2px rgba(60, 216, 157, 0.5);
+  box-shadow: 1px 2px 4px -1px rgba(60, 216, 157, 0.5),
+    1px 2px 4px -1px rgba(60, 216, 157, 0.5);
   color: black;
 `;
 
