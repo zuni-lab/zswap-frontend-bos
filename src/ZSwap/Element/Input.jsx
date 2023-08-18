@@ -8,6 +8,7 @@ const Wrapper = styled.div`
   border: 1px solid #0d9488;
   background-color: rgba(13, 148, 136, 0.05);
   min-height: 170px;
+  cursor: default;
 `;
 
 const NEARInputContainer = styled.div`
@@ -29,15 +30,10 @@ const BalanceContainer = styled.div`
   }
 `;
 
-const NEARTexture = styled.div`
-  font-size: 24px;
-  font-weight: bold;
-  margin-left: 10px;
-`;
-
 const LogoWithText = styled.div`
   display: flex;
   align-items: center;
+  cursor: pointer;
 `;
 
 const MaxTexture = styled.div`
@@ -49,6 +45,57 @@ const MaxTexture = styled.div`
     opacity: 0.8;
   }
 `;
+
+const SelectBody = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 24px;
+  font-weight: bold;
+  color: black;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+`;
+
+const CustomSelect = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 24px;
+  font-weight: bold;
+  color: black;
+  cursor: pointer;
+  &:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid gray;
+  }
+`;
+
+State.init({
+  showList: false,
+});
+
+const selectedToken = props.listToken.find(
+  (token) => token.symbol === props.selectedToken
+);
+
+const otherTokens = props.listToken.filter(
+  (token) => token.symbol !== props.selectedToken
+);
 
 return (
   <Wrapper>
@@ -86,7 +133,6 @@ return (
               textAlign: "left",
               background: "rgba(0, 0, 0, 0.05)",
               color: props.inputError ? "#ec6868" : "black",
-              cursor: "auto",
               boxShadow: "none",
               border: "none",
               outline: "none",
@@ -97,22 +143,61 @@ return (
             value={props.value}
             onChange={props.onChange}
           />
-          <LogoWithText
+          <div
             style={{
-              width: "20%",
+              width: "27%",
+              position: "relative",
             }}
           >
-            <img
-              src={
-                props.iconUrl ||
-                `https://ipfs.near.social/ipfs/bafkreid5xjykpqdvinmj432ldrkbjisrp3m4n25n4xefd32eml674ypqly`
-              }
-              width={26}
-              height={26}
-              alt="Token Icon"
-            />
-            <NEARTexture>{props.iconName}</NEARTexture>
-          </LogoWithText>
+            <CustomSelect
+              onClick={() => {
+                State.update({
+                  showList: !state.showList,
+                });
+              }}
+            >
+              <LogoWithText value={selectedToken.symbol}>
+                {selectedToken.icon}
+                <span
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    marginLeft: "10px",
+                  }}
+                >
+                  {selectedToken.symbol}
+                </span>
+              </LogoWithText>
+            </CustomSelect>
+            <SelectBody
+              style={{
+                display: state.showList ? "block" : "none",
+              }}
+            >
+              {otherTokens.map((token) => (
+                <LogoWithText
+                  value={token.symbol}
+                  onClick={() => {
+                    State.update({
+                      showList: false,
+                    });
+                    props.onChangeToken(token.symbol);
+                  }}
+                >
+                  {token.icon}
+                  <span
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "bold",
+                      marginLeft: "10px",
+                    }}
+                  >
+                    {token.symbol}
+                  </span>
+                </LogoWithText>
+              ))}
+            </SelectBody>
+          </div>
         </div>
       </div>
     </NEARInputContainer>
