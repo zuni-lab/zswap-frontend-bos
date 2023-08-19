@@ -1,3 +1,10 @@
+const Container = styled.div`
+  display: flex;
+  gap: 16px;
+  position: relative;
+  width: ${(props) => props.width || "100%"};
+`;
+
 const SelectBody = styled.div`
   position: absolute;
   top: ${(props) => !props.bottom && "calc(100% + 8px)"};
@@ -70,8 +77,9 @@ const selectedItem = props.list.find(
 const otherItems = props.list.filter(
   (item) => item.value !== props.selectedItem
 );
+
 return (
-  <>
+  <Container>
     {props.selectedItem !== "" ? (
       <CustomSelect
         onClick={() => {
@@ -119,5 +127,5 @@ return (
         </LogoWithText>
       ))}
     </SelectBody>
-  </>
+  </Container>
 );
