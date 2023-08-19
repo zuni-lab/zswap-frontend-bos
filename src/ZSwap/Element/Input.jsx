@@ -13,8 +13,8 @@ const Wrapper = styled.div`
 
 const NEARInputContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
@@ -48,8 +48,9 @@ const MaxTexture = styled.div`
 
 const SelectBody = styled.div`
   position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
+  top: ${(props) => !props.bottom && "calc(100% + 8px)"};
+  bottom: ${(props) => props.bottom};
+  left: ${(props) => props.left || 0};
   width: 100%;
   padding: 8px 16px;
   font-size: 24px;
@@ -62,14 +63,16 @@ const SelectBody = styled.div`
 
 const CustomSelect = styled.div`
   position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.8);
+  background: ${(props) => props.backgroundColor || "rgba(255, 255, 255, 0.8)"};
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 24px;
+  font-size: ${(props) => props.fontSize + "px" || "24px"};
   font-weight: bold;
-  color: black;
+  color: ${(props) => props.textColor || "black"};
   cursor: pointer;
   &:after {
     content: "";
@@ -81,8 +84,41 @@ const CustomSelect = styled.div`
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid gray;
+    border-top: 6px solid ${(props) => props.textColor || "gray"};
   }
+`;
+
+const Label = styled.label`
+  font-size: ${(props) => props.fontSize || "20px"};
+  font-weight: ${(props) => props.fontWeight || "600"};
+  color: ${(props) => props.color || "#6b7280"};
+`;
+
+const Container = styled.div`
+  display: flex;
+  gap: 16px;
+  position: relative;
+  width: ${(props) => props.width || "100%"};
+`;
+
+const Input = styled.input`
+  flex: 1;
+  padding: 8px 16px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.05);
+  color: ${(props) => (props.textColor ? "#ec6868" : "black")};
+  box-shadow: none;
+  border: none;
+  outline: none;
+  --webkit-appearance: none;
+  --moz-appearance: textfield;
+`;
+const Span = styled.span`
+  font-size: ${(props) => props.fontSize || "24px"};
+  font-weight: ${(props) => props.fontWeight || "bold"};
+  margin-left: ${(props) => props.marginLeft || "10px"};
 `;
 
 State.init({
@@ -100,55 +136,16 @@ const otherTokens = props.listToken.filter(
 return (
   <Wrapper>
     <NEARInputContainer>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-          flex: "1",
-        }}
-      >
-        <label
-          style={{
-            fontSize: "20px",
-            fontWeight: "600",
-            color: "#6b7280",
-          }}
-        >
-          {props.label}
-        </label>
-        <div
-          style={{
-            display: "flex",
-            gap: "16px",
-            flex: "1",
-          }}
-        >
-          <input
-            style={{
-              flex: 1,
-              padding: "8px 16px",
-              fontSize: "24px",
-              fontWeight: "bold",
-              textAlign: "left",
-              background: "rgba(0, 0, 0, 0.05)",
-              color: props.inputError ? "#ec6868" : "black",
-              boxShadow: "none",
-              border: "none",
-              outline: "none",
-              "--webkit-appearance": "none",
-              "--moz-appearance": "textfield",
-            }}
-            placeholder={0}
-            value={props.value}
-            onChange={props.onChange}
-          />
-          <div
-            style={{
-              width: "27%",
-              position: "relative",
-            }}
-          >
+      <Label>{props.label}</Label>
+      <Container>
+        <Input
+          placeholder={0}
+          value={props.value}
+          onChange={props.onChange}
+          textColor={props.inputError && "#ec6868"}
+        />
+        <Container width="27%">
+          {selectedToken ? (
             <CustomSelect
               onClick={() => {
                 State.update({
@@ -158,48 +155,47 @@ return (
             >
               <LogoWithText value={selectedToken.symbol}>
                 {selectedToken.icon}
-                <span
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    marginLeft: "10px",
-                  }}
-                >
-                  {selectedToken.symbol}
-                </span>
+                <Span>{selectedToken.symbol}</Span>
               </LogoWithText>
             </CustomSelect>
-            <SelectBody
-              style={{
-                display: state.showList ? "block" : "none",
+          ) : (
+            <CustomSelect
+              backgroundColor="#0d9488"
+              fontSize={20}
+              textColor="white"
+              onClick={() => {
+                State.update({
+                  showList: !state.showList,
+                });
               }}
             >
-              {otherTokens.map((token) => (
-                <LogoWithText
-                  value={token.symbol}
-                  onClick={() => {
-                    State.update({
-                      showList: false,
-                    });
-                    props.onChangeToken(token.symbol);
-                  }}
-                >
-                  {token.icon}
-                  <span
-                    style={{
-                      fontSize: "24px",
-                      fontWeight: "bold",
-                      marginLeft: "10px",
-                    }}
-                  >
-                    {token.symbol}
-                  </span>
-                </LogoWithText>
-              ))}
-            </SelectBody>
-          </div>
-        </div>
-      </div>
+              Select token
+            </CustomSelect>
+          )}
+
+          <SelectBody
+            style={{
+              display: state.showList ? "block" : "none",
+            }}
+            bottom={props?.selectPosition?.bottom}
+          >
+            {otherTokens.map((token) => (
+              <LogoWithText
+                value={token.symbol}
+                onClick={() => {
+                  State.update({
+                    showList: false,
+                  });
+                  props.onChangeToken(token.symbol);
+                }}
+              >
+                {token.icon}
+                <Span>{token.symbol}</Span>
+              </LogoWithText>
+            ))}
+          </SelectBody>
+        </Container>
+      </Container>
     </NEARInputContainer>
     {props.showBalance && (
       <BalanceContainer>
