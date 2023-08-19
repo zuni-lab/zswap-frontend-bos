@@ -266,6 +266,7 @@ const PoolView = () => {
         props={{
           title: "Pools",
           description: "",
+          config: config,
         }}
       />
       <Widget
