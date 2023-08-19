@@ -87,9 +87,14 @@ const TOKEN_RECORDS = [
 
 /** State */
 State.init({
-  selectedToken: TOKENS[0],
-  token0: "",
-  token1: "",
+  firstSelectedToken: {
+    name: TOKENS[0],
+    amount: "",
+  },
+  secondSelectedToken: {
+    name: "UNKNOWN",
+    amount: "",
+  },
   inputError: "",
 });
 
@@ -244,9 +249,15 @@ const ArrowWrapper = styled.div`
   }
 `;
 
-const onChangeToken = (token) => {
+const onFirstTokenChange = (token) => {
   State.update({
-    selectedToken: token,
+    firstSelectedToken: { ...firstSelectedToken, name: token },
+  });
+};
+
+const onSecondTokenChange = (token) => {
+  State.update({
+    secondSelectedToken: { ...secondSelectedToken, name: token },
   });
 };
 
@@ -257,14 +268,14 @@ return (
       props={{
         label: "You pay",
         value: state.token0,
-        onChange,
-        onClickMax,
         inputError: state.inputError,
         balance: nearBalance,
-        selectedToken: state.selectedToken,
+        selectedToken: state.firstSelectedToken.name,
         listToken: TOKEN_RECORDS,
-        onChangeToken,
         showBalance: true,
+        onChange: onChange,
+        onClickMax: onClickMax,
+        onChangeToken: onFirstTokenChange,
       }}
     />
     <Widget
@@ -272,14 +283,17 @@ return (
       props={{
         label: "You receive",
         value: state.token1,
-        onChange,
-        onClickMax,
         inputError: state.inputError,
         balance: nearBalance,
-        selectedToken: TOKENS[1],
+        selectedToken: state.secondSelectedToken.name,
         listToken: TOKEN_RECORDS,
-        onChangeToken,
         showBalance: false,
+        selectPosition: {
+          bottom: "calc(100% + 8px)",
+        },
+        onChange: onChange,
+        onClickMax: onClickMax,
+        onChangeToken: onSecondTokenChange,
       }}
     />
     <ArrowWrapper>
