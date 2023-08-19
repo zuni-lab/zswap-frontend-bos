@@ -266,6 +266,7 @@ return (
     <Widget
       src={`${config.ownerId}/widget/ZSwap.Element.Input`}
       props={{
+        config: config,
         label: "You pay",
         value: state.token0,
         inputError: state.inputError,
@@ -281,6 +282,7 @@ return (
     <Widget
       src={`${config.ownerId}/widget/ZSwap.Element.Input`}
       props={{
+        config: config,
         label: "You receive",
         value: state.token1,
         inputError: state.inputError,

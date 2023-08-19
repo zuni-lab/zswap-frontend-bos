@@ -49,7 +49,9 @@ const DialogBody = styled.div`
   }
 `;
 
-const Section = styled.div``;
+const Section = styled.div`
+  flex: 1;
+`;
 
 const Horizontal = styled.hr`
   width: 100%;
@@ -204,11 +206,10 @@ return (
           <Section>
             <div
               style={{
-                backgroundColor: "#0d9488",
+                display: "flex",
+                gap: 8,
               }}
-            >
-              Section 1
-            </div>
+            ></div>
           </Section>
           <Section>
             <div
