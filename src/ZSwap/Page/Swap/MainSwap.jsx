@@ -3,7 +3,7 @@
 /** Constants */
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
-const TOKENS = ["ZSWAP", "NEAR", "ETH"];
+const TOKENS = ["ZSWAP", "NEAR", "ETH", "UNKNOWN"];
 const TOKEN_RECORDS = [
   {
     name: "ZSWAP",
@@ -92,7 +92,7 @@ State.init({
     amount: "",
   },
   secondSelectedToken: {
-    name: "UNKNOWN",
+    name: TOKENS.pop(),
     amount: "",
   },
   inputError: "",
@@ -266,6 +266,7 @@ return (
     <Widget
       src={`${config.ownerId}/widget/ZSwap.Element.Input`}
       props={{
+        config: config,
         label: "You pay",
         value: state.token0,
         inputError: state.inputError,
@@ -281,6 +282,7 @@ return (
     <Widget
       src={`${config.ownerId}/widget/ZSwap.Element.Input`}
       props={{
+        config: config,
         label: "You receive",
         value: state.token1,
         inputError: state.inputError,
