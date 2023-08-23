@@ -101,8 +101,8 @@ const updateTabName = (tabName) =>
 
 const updatePage = (pageName) => {
   State.update({ page: pageName });
-  console.log("switch to page ", pageName)
-}
+  console.log("switch to page ", pageName);
+};
 
 // Account balances
 function getNearBalance(accountId, onInvalidate) {
@@ -225,36 +225,17 @@ const SwapView = () => {
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
           title: "Trade crypto with confidence and convenience",
-          description: "Buy, sell, and explore tokens in the safest and easiest manner",
+          description:
+            "Buy, sell, and explore tokens in the safest and easiest manner",
         }}
       />
       <OverflowContainer>
-        {/* <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} /> */}
-        {/* <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Tab`}
-          props={{
-            tabName: state.tabName,
-            updateTabName,
-          }}
-        /> */}
         {state.tabName === "SWAP" && (
           <Widget
             src={`${config.ownerId}/widget/ZSwap.Page.Swap.MainSwap`}
             props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
           />
         )}
-        {/* {state.tabName === "unstake" && (
-          <Widget
-            src={`${config.ownerId}/widget/ZSwap.Page.Swap.Sell.Sell`}
-            props={{
-              config,
-              zswapBalance,
-              unstakeInfo: state.unstakeInfo,
-              updateAccountInfo,
-              updatePage,
-            }}
-          />
-        )} */}
       </OverflowContainer>
     </Container>
   );

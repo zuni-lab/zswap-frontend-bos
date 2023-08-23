@@ -225,7 +225,6 @@ const SwapWrapper = styled.div`
   border-radius: 10px;
   box-shadow: 1px 2px 4px -1px rgba(60, 216, 157, 0.5),
     1px 2px 4px -1px rgba(60, 216, 157, 0.5);
-  padding-bottom: 4px;
   color: black;
 `;
 
@@ -245,7 +244,7 @@ const ArrowWrapper = styled.div`
   cursor: pointer;
   &:hover {
     opacity: 0.9;
-    color: #2BCC91;
+    color: #2bcc91;
   }
 `;
 
