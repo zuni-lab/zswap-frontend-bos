@@ -95,7 +95,7 @@ return (
       </CustomSelect>
     ) : (
       <CustomSelect
-        backgroundColor="#0d9488"
+        backgroundColor="#2BCC91"
         fontSize={20}
         textColor="white"
         onClick={() => {
