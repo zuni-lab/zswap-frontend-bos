@@ -4,7 +4,7 @@
 const App = styled.div`
   position: relative;
   width: 100%;
-  height: 80vh;
+  min-height: 100vh;
   padding: 8px;
 `;
 
@@ -26,7 +26,6 @@ const Container = styled.div`
 
 const OverflowContainer = styled.div`
   width: 100%;
-  height: 56vh;
   padding: 4px 8px;
   overflow-y: scroll;
   display: flex;
@@ -90,7 +89,7 @@ const config = getConfig(context.networkId);
 
 State.init({
   tabName: "SWAP", // SWAP | BUY
-  page: "swap", // "swap" | "pool" | "tokens" | "account"
+  page: "pools", // "swap" | "pools" | "tokens" | "account"
   nearBalance: "",
   unstakeInfo: {},
 });
@@ -100,7 +99,10 @@ const updateTabName = (tabName) =>
     tabName,
   });
 
-const updatePage = (pageName) => State.update({ page: pageName });
+const updatePage = (pageName) => {
+  State.update({ page: pageName });
+  console.log("switch to page ", pageName)
+}
 
 // Account balances
 function getNearBalance(accountId, onInvalidate) {
@@ -222,26 +224,26 @@ const SwapView = () => {
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
-          title: "Trade crypto and NFTs with confidence",
-          description: "Buy, sell, and explore tokens and NFTs",
+          title: "Trade crypto with confidence and convenience",
+          description: "Buy, sell, and explore tokens in the safest and easiest manner",
         }}
       />
       <OverflowContainer>
-        <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} />
-        <Widget
+        {/* <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} /> */}
+        {/* <Widget
           src={`${config.ownerId}/widget/ZSwap.Page.Swap.Tab`}
           props={{
             tabName: state.tabName,
             updateTabName,
           }}
-        />
+        /> */}
         {state.tabName === "SWAP" && (
           <Widget
             src={`${config.ownerId}/widget/ZSwap.Page.Swap.MainSwap`}
             props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
           />
         )}
-        {state.tabName === "unstake" && (
+        {/* {state.tabName === "unstake" && (
           <Widget
             src={`${config.ownerId}/widget/ZSwap.Page.Swap.Sell.Sell`}
             props={{
@@ -252,7 +254,7 @@ const SwapView = () => {
               updatePage,
             }}
           />
-        )}
+        )} */}
       </OverflowContainer>
     </Container>
   );

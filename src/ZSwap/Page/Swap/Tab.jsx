@@ -21,9 +21,9 @@ const TabItem = styled.div`
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease-in-o;
-  background-color: ${(props) => (props.active ? "#0d9488" : "transparent")};
-  border-color: ${(props) => (props.active ? "transparent" : "#0d9488")};
-  color: ${(props) => (props.active ? "white" : "#0d9488")};
+  background-color: ${(props) => (props.active ? "#2BCC91" : "transparent")};
+  border-color: ${(props) => (props.active ? "transparent" : "#2BCC91")};
+  color: ${(props) => (props.active ? "white" : "#2BCC91")};
   border-style: solid;
   border-width: 2px;
 `;
@@ -36,7 +36,7 @@ const tabName = props.tabName || TAB_RECORD.SWAP;
 
 return (
   <TabContainer>
-    <TabItem
+    {/* <TabItem
       active={tabName === TAB_RECORD.SWAP}
       onClick={() => props.updateTabName(TAB_RECORD.SWAP)}
     >
@@ -47,6 +47,6 @@ return (
       onClick={() => props.updateTabName(TAB_RECORD.BUY)}
     >
       {TAB_RECORD.BUY}
-    </TabItem>
+    </TabItem> */}
   </TabContainer>
 );

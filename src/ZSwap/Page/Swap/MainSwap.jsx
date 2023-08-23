@@ -245,7 +245,7 @@ const ArrowWrapper = styled.div`
   cursor: pointer;
   &:hover {
     opacity: 0.9;
-    color: #0d9488;
+    color: #2BCC91;
   }
 `;
 

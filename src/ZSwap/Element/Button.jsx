@@ -11,7 +11,7 @@ const PrimaryButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #0d9488;
+  background-color: #2BCC91;
   color: white;
   border-radius: 10px;
   font-weight: bold;
