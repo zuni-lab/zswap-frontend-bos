@@ -1,97 +1,53 @@
 /** Constants */
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
-const TOKENS = ["ZSWAP", "NEAR", "ETH", "UNKNOWN"];
-const TOKEN_RECORDS = [
-  {
-    name: "ZSWAP",
-    symbol: "ZSWAP",
-    icon: (
-      <span
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "50%",
-          width: "26px",
-          height: "26px",
-          padding: "4.5px",
-          backgroundColor: "#e4e8e9",
-        }}
-      >
-        <svg
-          width={36}
-          height={(36 * 83) / 80}
-          viewBox="0 0 80 83"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            opacity="0.5"
-            d="M78.9694 37.4636C78.9335 37.5673 78.8943 37.671 78.8552 37.7778L78.4375 37.6395L50.6776 28.4349L28.4905 21.0844L12.9041 15.918C11.7958 15.5306 10.8287 14.8408 10.1207 13.9328C9.41268 13.0249 8.99439 11.9381 8.9169 10.805C8.9169 10.6762 8.9169 10.5473 8.9169 10.4153C8.9169 10.2833 8.9169 10.1828 8.9169 10.0665C8.95012 9.50294 9.06884 8.9471 9.26928 8.41666C10.4742 5.22976 12.944 2.63429 16.1356 1.20105C19.3271 -0.23219 22.979 -0.385834 26.2881 0.773893L29.4726 1.8235L67.1613 14.243C70.7504 15.4278 73.6379 17.637 75.9317 20.2139C77.4032 21.8763 78.8682 25.3269 78.8682 25.3269L79.0999 25.9868C80.3435 29.7257 80.2977 33.7518 78.9694 37.4636Z"
-            fill="black"
-          />
-          <path
-            opacity="0.5"
-            d="M71.1156 71.9856C71.1155 72.2051 71.1024 72.4244 71.0764 72.6424C71.0229 73.1005 70.9134 73.5509 70.7501 73.9843C70.1539 75.5625 69.2406 77.0122 68.0626 78.2505C66.8846 79.4887 65.4648 80.4913 63.8844 81.2011C62.3041 81.9108 60.594 82.3137 58.8519 82.3868C57.1098 82.4599 55.3698 82.2017 53.7314 81.627L50.5208 80.5711L12.8647 68.1705C9.30191 67.0045 6.18273 64.8386 3.90829 61.9513C1.20063 58.5203 -0.16386 54.2794 0.0549187 49.975C0.14756 48.1505 0.523705 46.3496 1.1708 44.6326V44.6074H1.20669L28.81 53.7555L51.666 61.3323L67.1186 66.4547C68.1796 66.8263 69.1121 67.4754 69.8112 68.3292C70.5103 69.183 70.9485 70.2076 71.0764 71.288C71.1036 71.5196 71.1167 71.7525 71.1156 71.9856Z"
-            fill="black"
-          />
-          <path
-            opacity="0.5"
-            d="M78.9463 37.4332L78.4145 37.606L28.7872 53.7526L3.88548 61.9233C1.17359 58.4928 -0.194448 54.2505 0.0223133 49.9438C0.114954 48.1193 0.4911 46.3185 1.1382 44.6014H1.18387L50.6513 28.3983L75.9054 20.1804C75.9054 20.1804 78.0001 23.0779 78.8419 25.2934C78.9039 25.4568 79.0736 25.9533 79.0736 25.9533C80.319 29.6929 80.2743 33.7201 78.9463 37.4332Z"
-            fill="black"
-          />
-          <path
-            opacity="0.5"
-            d="M29.4791 1.82059V15.5443C29.4825 17.4302 29.1514 19.3029 28.5003 21.0815C27.3073 24.3216 25.1014 27.1262 22.1858 29.1093C19.2702 31.0925 15.7882 32.1568 12.2189 32.156H11.4391C10.7716 32.1551 10.1317 31.8992 9.66004 31.4443C9.18836 30.9894 8.92343 30.3728 8.92343 29.7299V10.0636C8.95665 9.50003 9.07538 8.94418 9.27582 8.41374C10.4808 5.22685 12.9506 2.63137 16.1421 1.19813C19.3336 -0.235108 22.9855 -0.388753 26.2946 0.770975L29.4791 1.82059Z"
-            fill="black"
-          />
-          <path
-            opacity="0.5"
-            d="M71.0765 53.1211V72.6428C71.0229 73.1009 70.9134 73.5513 70.7502 73.9846C70.1539 75.5629 69.2407 77.0126 68.0627 78.2508C66.8846 79.4891 65.4649 80.4917 63.8845 81.2014C62.3041 81.9111 60.594 82.3141 58.8519 82.3872C57.1098 82.4603 55.3699 82.2021 53.7314 81.6274L50.5208 80.5715V67.3224C50.5165 65.2811 50.9048 63.2566 51.666 61.3515C52.9193 58.215 55.1301 55.5179 58.007 53.6161C60.8839 51.7142 64.2917 50.6969 67.781 50.6981H68.5739C69.2388 50.7014 69.8753 50.9582 70.3443 51.4122C70.8132 51.8662 71.0765 52.4806 71.0765 53.1211Z"
-            fill="black"
-          />
-        </svg>
-      </span>
-    ),
-  },
-  {
-    name: "NEAR",
-    symbol: "NEAR",
-    icon: (
-      <img
-        src={
-          "https://seeklogo.com/images/N/near-icon-logo-10785AE366-seeklogo.com.png"
-        }
-        width={26}
-        height={26}
-        alt="NEAR ICON"
-      />
-    ),
-  },
-  {
-    name: "ETHEREUM",
-    symbol: "ETH",
-    icon: (
-      <img
-        src={"https://s2.coinmarketcap.com/static/img/coins/200x200/1027.png"}
-        width={26}
-        height={26}
-        alt="NEAR ICON"
-      />
-    ),
-  },
-];
+const TOKEN_RECORDS = JSON.parse(
+  fetch(
+    "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
+  ).body
+);
+
+const TOKENS = {};
+
+Object.keys(TOKEN_RECORDS).forEach((pair) => {
+  if (pair.slice(-4) === "USDT") {
+    const tokenSymbol = pair.slice(0, -5);
+    if (tokenSymbol) {
+      TOKENS[tokenSymbol] = {
+        ...TOKEN_RECORDS[pair],
+        priceInUSD: -1,
+      };
+    }
+  }
+});
+
+// {
+//   "1INCH": {
+//     "assetName": "1inch Network",
+//     "pairSymbol": "1INCH/USDT",
+//     "logo": "https://s2.coinmarketcap.com/static/img/coins/64x64/8104.png",
+//     "cmcLink": "https://www.binance.com/en/trade/1INCH_USDT"
+//   }
+// }
+
+
+const INF = 1e308;
 
 /** State */
 State.init({
   firstSelectedToken: {
-    name: TOKENS[0],
-    amount: "",
+    symbol: "",
+    amount: 0,
+    priceInUSD: 0
   },
   secondSelectedToken: {
-    name: TOKENS.pop(),
-    amount: "",
+    symbol: "",
+    amount: 0,
+    priceInUSD: 0
+  },
+  priceRange: {
+    lowPrice: 0,
+    highPrice: INF
   },
   inputError: "",
   show_fee_choices: false,
@@ -169,7 +125,6 @@ const ArrowWrapper = styled.div`
 
 const Label = styled.div`
   padding: 8px;
-  width: 100%;
   display: flex;
   justify-content: ${(props) => props.justifyContent || "center"};
   font-size: ${(props) => props.fontSize + "px" || "20px"};
@@ -182,16 +137,59 @@ const connectWallet =
     return true;
   });
 
+
+const getPriceOfTokenIfNeeded = (token) => {
+  if(TOKENS[token].priceInUSD < 0){
+    console.log("Start fetching price for " + token + "...");
+    asyncFetch(
+      "https://api.unmarshal.com/v1/pricestore/" + token + "?auth_key=9v0mXZlpj27qoEmabpGJ8amEICsKmRWl6KgVnCOs"
+    ).then((res) => {
+      try{
+        TOKENS[token] = {
+          ...TOKENS[token],
+          priceInUSD: Number(res.body[0].price)
+        }
+
+        console.log("Price of " + token + " is ", TOKENS[token].priceInUSD);
+        
+        // trigger re-rendering
+        State.update({
+          firstSelectedToken: { ...state.firstSelectedToken, priceInUSD: token == state.firstSelectedToken.symbol ? res.body[0].price : state.firstSelectedToken.priceInUSD },
+          secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? res.body[0].price : state.secondSelectedToken.priceInUSD },
+        });
+      }catch(err){
+        console.log(err);
+      }
+    })
+  }
+}
+
 const onFirstTokenChange = (token) => {
+  if(token === state.secondSelectedToken.symbol){
+    State.update({
+      secondSelectedToken: { ...state.secondSelectedToken, symbol: "", amount: 0 },
+    });
+  }
+  
   State.update({
-    firstSelectedToken: { ...firstSelectedToken, name: token },
+    firstSelectedToken: { ...state.firstSelectedToken, symbol: token, amount: 0 },
   });
+
+  getPriceOfTokenIfNeeded(token);
 };
 
 const onSecondTokenChange = (token) => {
+  if(token === state.firstSelectedToken.symbol){
+    State.update({
+      firstSelectedToken: { ...state.firstSelectedToken, symbol: "",  amount: 0 },
+    });
+  }
+
   State.update({
-    secondSelectedToken: { ...secondSelectedToken, name: token },
+    secondSelectedToken: { ...state.secondSelectedToken, symbol: token,  amount: 0 },
   });
+
+  getPriceOfTokenIfNeeded(token);
 };
 /////////////////////////////////////////////////////////////////////////////////
 // const contract = "hello.near-examples.near";
@@ -482,18 +480,23 @@ const ChooseDepositAmount = (
     </Label>
     <div class="amount_input_container">
       <div class="top_row">
-        <input class="amount_input" type="number" />
-        <div class="token_name">
-          <img
-            src="data:image/png;base64,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"
-            alt="ETH logo"
-            class="sc-12k1pn4-1 bwVixy"
-          />
-          ETH
-        </div>
+      <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="79" spellcheck="false" value={state.firstSelectedToken.amount}
+          onChange={(e) => {
+            State.update({
+              firstSelectedToken: {
+                ...state.firstSelectedToken,
+                amount: Number(e.target.value)
+              }
+            })
+          }}
+        />
+        {state.firstSelectedToken.symbol && <div class="token_name">
+          <img src = {TOKENS[state.firstSelectedToken.symbol].logo} width={24} height={24} alt = {state.firstSelectedToken.symbol} />
+          {state.firstSelectedToken.symbol}
+          </div>}
       </div>
       <div class="bottom_row">
-        <div class="usd_valuation">$5.32M</div>
+        <div class="usd_valuation">${state.firstSelectedToken ? state.firstSelectedToken.amount * state.firstSelectedToken.priceInUSD : "-"}</div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
           <div class="max_balance_btn">MAX</div>
@@ -503,18 +506,23 @@ const ChooseDepositAmount = (
 
     <div class="amount_input_container">
       <div class="top_row">
-        <input class="amount_input" type="number" />
-        <div class="token_name">
-          <img
-            src="https://raw.githubusercontent.com/Uniswap/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png"
-            alt="USDT logo"
-            class="sc-12k1pn4-1 bwVixy"
-          />
-          USDT
-        </div>
+        <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="79" spellcheck="false" value={state.secondSelectedToken.amount}
+          onChange={(e) => {
+            State.update({
+              secondSelectedToken: {
+                ...state.secondSelectedToken,
+                amount: Number(e.target.value)
+              }
+            })
+          }}
+        />
+        {state.secondSelectedToken.symbol && <div class="token_name">
+          <img src = {TOKENS[state.secondSelectedToken.symbol].logo} width={24} height={24} alt = {state.secondSelectedToken.symbol} />
+          {state.secondSelectedToken.symbol}
+          </div>}
       </div>
       <div class="bottom_row">
-        <div class="usd_valuation">$5.32M</div>
+        <div class="usd_valuation">${state.secondSelectedToken ? state.secondSelectedToken.amount * state.secondSelectedToken.priceInUSD : "-"}</div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
           <div class="max_balance_btn">MAX</div>
@@ -527,24 +535,53 @@ const ChooseDepositAmount = (
 /////////////////////////////////////////////////////////////////////////////////
 
 const ChoosePriceRangeWrapper = styled.div`
-.price_choices_container{
+.header{
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.header .full_range_btn{
+  background-color: transparent;
+  padding: 6px;
+  text-align: center;
+  border-radius: 8px;
+  color: rgb(13, 17, 28);
+  cursor: pointer;
+  border: 1px solid rgb(210, 217, 238);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.header .full_range_btn:hover{
+  box-shadow: rgb(152, 161, 192) 0px 0px 0px 1px;
+}
+.price_choices_container{
   max-width: 500px;
 }
+
 .price_choices_container .price_choice {
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   padding: 12px;
   cursor: pointer;
-  width: 48%;
   border-radius: 12px;
   border: 1px solid rgb(210, 217, 238);
 }
 
-.price_choice .price_label{
-    font-weight: 500;
+.price_choices_container .price_choice:focus, .price_choices_container .price_choice:focus-within, .price_choices_container .price_choice:target{
+  border-color: #2BCC91;
+}
+
+.price_choice .top{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price_choice .top .price_label{
   font-size: 12px;
   text-align: center;
   color: rgb(119, 128, 160);
@@ -552,17 +589,17 @@ const ChoosePriceRangeWrapper = styled.div`
 
 .price_choice .price_notation_label{
   min-width: 0px;
-  font-weight: 500;
   font-size: 12px;
   text-align: center;
   color: rgb(119, 128, 160);
 }
 
-.price_input_container{
+.price_choice .mid{
   display: flex;
+  width: 100%;
 }
 
-.price_input{
+.price_choice .mid .price_input{
   font-weight: 500;
   padding: 0px 10px;
   color: rgb(13, 17, 28);
@@ -578,9 +615,9 @@ const ChoosePriceRangeWrapper = styled.div`
   text-overflow: ellipsis;
   padding: 0px;
   appearance: textfield;
-  text-align: center;
   font-size: 20px;
 }
+
 .price_adjust_btn{
   color: rgb(13, 17, 28) !important;
   width: 30px;
@@ -594,31 +631,31 @@ const ChoosePriceRangeWrapper = styled.div`
   border-radius: 8px;
 }
 
-.full_range_btn{
-  padding: 8px;
-  width: 100%;
-  text-align: center;
-  border-radius: 8px;
-  color: rgb(13, 17, 28);
-  cursor: pointer;
-  border: 1px solid rgb(210, 217, 238);
-  font-weight: 400;
-  font-size: 12px;
-  margin-top: 12px;
+.price_choice .bottom{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-
-.full_range_btn: hover{
-  background: #f0f2f2;
-}
-
 `;
 const ChoosePriceRangeForm = (
   <ChoosePriceRangeWrapper>
+    <div class = "header">
+      <Label fontSize={18} justifyContent={"flex-start"}>
+        Select price range
+      </Label>
+      <div class="full_range_btn" onClick={() => {
+        State.update({
+          priceRange: { lowPrice: 0, highPrice: INF }
+        })
+      }}>Full range</div>
+    </div>
     <div class="price_choices_container">
       <div class="price_choice">
-        <div class="price_label">Min Price</div>
-        <div class="price_input_container">
-          <div class="price_adjust_btn minus">-</div>
+        <div class="top">
+          <div class="price_label">Min Price</div>
+          <div class="price_adjust_btn plus">+</div>
+        </div>
+        <div class="mid">
           <input
             class="price_input"
             inputmode="decimal"
@@ -627,19 +664,30 @@ const ChoosePriceRangeForm = (
             type="text"
             pattern="^[0-9]*[.,]?[0-9]*$"
             placeholder="0"
+            min={0}
             minlength="1"
             maxlength="79"
             spellcheck="false"
-            value="0.00000099462"
+            value={state.priceRange.lowPrice}
+            onChange={(e) => {
+              State.update({
+                priceRange: {...state.priceRange, lowPrice: Number(e.target.value)}
+              })
+            }}
           />
-          <div class="price_adjust_btn plus">+</div>
         </div>
-        <div class="price_notation_label">USDT per ETH</div>
+        <div class="bottom">
+          <div class="price_notation_label">{state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && state.firstSelectedToken.symbol + " per " + state.secondSelectedToken.symbol}</div>
+          <div class="price_adjust_btn minus">-</div>
+        </div>
       </div>
+
       <div class="price_choice">
-        <div class="price_label">Max Price</div>
-        <div class="price_input_container">
-          <div class="price_adjust_btn minus">-</div>
+        <div class="top">
+          <div class="price_label">Max Price</div>
+          <div class="price_adjust_btn plus">+</div>
+        </div>
+        <div class="mid">
           <input
             class="price_input"
             inputmode="decimal"
@@ -649,16 +697,23 @@ const ChoosePriceRangeForm = (
             pattern="^[0-9]*[.,]?[0-9]*$"
             placeholder="0"
             minlength="1"
+            max={INF}
             maxlength="79"
             spellcheck="false"
-            value="5146"
+            value={state.priceRange.highPrice == INF ? "oo" : state.priceRange.highPrice}
+            onChange={(e) => {
+              State.update({
+                priceRange: {...state.priceRange, highPrice: Number(e.target.value)}
+              })
+            }}
           />
-          <div class="price_adjust_btn plus">+</div>
         </div>
-        <div class="price_notation_label">USDT per ETH</div>
+        <div class="bottom">
+        <div class="price_notation_label">{state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && state.firstSelectedToken.symbol + " per " + state.secondSelectedToken.symbol}</div>
+          <div class="price_adjust_btn minus">-</div>
+        </div>
       </div>
     </div>
-    <div class="full_range_btn">Full range</div>
   </ChoosePriceRangeWrapper>
 );
 
@@ -711,6 +766,157 @@ const NewPositionButton = (
   />
 );
 
+const ProvideLiquidityButton = (
+  <Widget src={`${config.ownerId}/widget/ZSwap.Element.Button`}
+  props={{
+    onClick: () => {
+      
+    },
+    text: (
+      "Provide liquidity"
+    ),
+    styles: {
+      width: "100%",
+      color: "white",
+    },
+  }}
+  />
+);
+
+
+const srcDocChart = `
+<style>
+#chartdiv {
+  width: 100%;
+  height: 500px;
+}
+
+</style>
+
+<!-- Resources -->
+<script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+
+<!-- Chart code -->
+<script>
+window.top.postMessage("loaded", "*");
+window.addEventListener("message", (event) => {
+    const data = event.data
+    const result = eval(data.exp);
+    // event.source.postMessage(result, "*");
+}, false);
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+// Create chart instance
+var chart = am4core.create("chartdiv", am4charts.XYChart);
+
+// Add data
+chart.data = generateChartData();
+
+// Create axes
+var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+
+var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+// Create series
+var series = chart.series.push(new am4charts.LineSeries());
+series.dataFields.valueY = "visits";
+series.dataFields.dateX = "date";
+series.strokeWidth = 1;
+series.minBulletDistance = 10;
+series.tooltipText = "{valueY}";
+series.fillOpacity = 0.1;
+series.tooltip.pointerOrientation = "vertical";
+series.tooltip.getFillFromObject = false;
+series.tooltip.background.fill = series.fill;
+
+
+var seriesRange = dateAxis.createSeriesRange(series);
+seriesRange.contents.strokeDasharray = "2,3";
+seriesRange.contents.stroke = chart.colors.getIndex(8);
+seriesRange.contents.strokeWidth = 1;
+
+var pattern = new am4core.LinePattern();
+pattern.rotation = -45;
+pattern.stroke = seriesRange.contents.stroke;
+pattern.width = 1000;
+pattern.height = 1000;
+pattern.gap = 6;
+seriesRange.contents.fill = pattern;
+seriesRange.contents.fillOpacity = 0.5;
+
+// Add scrollbar
+chart.scrollbarX = new am4core.Scrollbar();
+
+// Cursor
+chart.cursor = new am4charts.XYCursor();
+
+function generateChartData() {
+  var chartData = [];
+  var firstDate = new Date();
+  firstDate.setDate(firstDate.getDate() - 200);
+  var visits = 1200;
+  for (var i = 0; i < 200; i++) {
+    // we create date objects here. In your data, you can have date strings
+    // and then set format of your dates using chart.dataDateFormat property,
+    // however when possible, use date objects, as this will speed up chart rendering.
+    var newDate = new Date(firstDate);
+    newDate.setDate(newDate.getDate() + i);
+
+    visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
+
+    chartData.push({
+      date: newDate,
+      visits: visits
+    });
+  }
+  return chartData;
+}
+
+
+// add range
+var range = dateAxis.axisRanges.push(new am4charts.DateAxisDataItem());
+range.grid.stroke = chart.colors.getIndex(0);
+range.grid.strokeOpacity = 1;
+range.bullet = new am4core.ResizeButton();
+range.bullet.background.fill = chart.colors.getIndex(0);
+range.bullet.background.states.copyFrom(chart.zoomOutButton.background.states);
+range.bullet.minX = 0;
+range.bullet.adapter.add("minY", function(minY, target) {
+  target.maxY = chart.plotContainer.maxHeight;
+  target.maxX = chart.plotContainer.maxWidth;
+  return chart.plotContainer.maxHeight;
+})
+
+range.bullet.events.on("dragged", function() {
+  range.value = dateAxis.xToValue(range.bullet.pixelX);
+  seriesRange.value = range.value;
+})
+
+
+var firstTime = chart.data[0].date.getTime();
+var lastTime = chart.data[chart.data.length - 1].date.getTime();
+var date = new Date(firstTime + (lastTime - firstTime) / 2);
+
+range.date = date;
+
+seriesRange.date = date;
+seriesRange.endDate = chart.data[chart.data.length - 1].date;
+
+
+}); // end am4core.ready()
+</script>
+
+<!-- HTML -->
+<div id="chartdiv"></div>
+`;
+
 const PoolDiaglog = (
   <>
     <DialogWrapper>
@@ -754,12 +960,12 @@ const PoolDiaglog = (
               src={`${config.ownerId}/widget/ZSwap.Element.CustomSelect`}
               props={{
                 selectedItem:
-                  state.firstSelectedToken.name !== "UNKNOWN"
-                    ? state.firstSelectedToken.name
+                  state.firstSelectedToken.symbol
+                    ? state.firstSelectedToken.symbol
                     : "",
-                list: TOKEN_RECORDS.map((t) => ({
-                  value: t.symbol,
-                  icon: t.icon,
+                list: Object.keys(TOKENS).map((symbol) => ({
+                  value: symbol,
+                  icon: TOKENS[symbol].logo,
                 })),
                 onChangeItem: onFirstTokenChange,
               }}
@@ -771,12 +977,12 @@ const PoolDiaglog = (
               src={`${config.ownerId}/widget/ZSwap.Element.CustomSelect`}
               props={{
                 selectedItem:
-                  state.secondSelectedToken.name !== "UNKNOWN"
-                    ? state.secondSelectedToken.name
+                  state.secondSelectedToken.symbol
+                    ? state.secondSelectedToken.symbol
                     : "",
-                list: TOKEN_RECORDS.map((t) => ({
-                  value: t.symbol,
-                  icon: t.icon,
+                list: Object.keys(TOKENS).map((symbol) => ({
+                  value: symbol,
+                  icon: TOKENS[symbol].logo,
                 })),
                 onChangeItem: onSecondTokenChange,
               }}
@@ -797,6 +1003,19 @@ const PoolDiaglog = (
           </div>
         </Section>
       </DialogBody>
+      {state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && <iframe
+        className="border"
+        style={{
+          width: "100%",
+          height: "525px",
+        }}
+        srcDoc={srcDocChart}
+        message={{ exp: state.text || "", currentPrice: state.firstSelectedToken.priceInUSD / (state.secondSelectedToken.priceInUSD ?? 0) }}
+        onMessage={(res1) => State.update({ res1 })}
+      />
+      }
+      
+      {ProvideLiquidityButton}
     </DialogWrapper>
   </>
 );
