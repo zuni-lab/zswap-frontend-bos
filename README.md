@@ -1,4 +1,4 @@
-# ZSwap BOS Components
+# ZSwap BOS Frontend Components 
 
 [ZSwap Protocol](https://ZSwapprotocol.org/) is a liquid staking solution built on the NEAR Protocol. ZSwap unlocks liquidity of the staked NEAR by creating a staking derivative to be engaged with various DeFi protocols on NEAR and Aurora, while also enjoying over 10% APY staking rewards of the underlying base tokens. ZSwap is the cornerstone piece of the NEAR-Aurora DeFi ecosystem.
 
