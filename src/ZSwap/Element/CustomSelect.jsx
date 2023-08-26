@@ -7,6 +7,8 @@ const Container = styled.div`
 
 const SelectBody = styled.div`
   position: absolute;
+  flex-direction: column;
+  gap: 4px;
   top: ${(props) => !props.bottom && "calc(100% + 8px)"};
   bottom: ${(props) => props.bottom};
   left: ${(props) => props.left || 0};
@@ -89,18 +91,30 @@ return (
             showList: !state.showList,
           });
         }}
+        style={{
+          border: "1px solid rgb(0 0 0 /0.05)",
+        }}
       >
         <LogoWithText>
-          {selectedItem.icon ? 
-          <><img src = {selectedItem.icon} width = {24} height = {24} /> <Span>{selectedItem.value}</Span></> 
-          : <Span>Select token</Span>}
+          {selectedItem.icon ? (
+            <>
+              {typeof selectedItem.icon === "string" ? (
+                <img src={selectedItem.icon} width={24} height={24} />
+              ) : (
+                selectedItem.icon
+              )}
+              <Span>{selectedItem.value}</Span>
+            </>
+          ) : (
+            <Span>Select token</Span>
+          )}
         </LogoWithText>
       </CustomSelect>
     ) : (
       <CustomSelect
-        // backgroundColor="#2BCC91"
+        backgroundColor="rgba(43 202 144)"
         fontSize={20}
-        // textColor="white"
+        textColor="white"
         onClick={() => {
           State.update({
             showList: !state.showList,
@@ -112,7 +126,7 @@ return (
     )}
     <SelectBody
       style={{
-        display: state.showList ? "block" : "none",
+        display: state.showList ? "flex" : "none",
       }}
       bottom={props?.bottom}
     >
@@ -125,8 +139,14 @@ return (
             props.onChangeItem(value);
           }}
         >
-          <img src = {icon} width = {24} height = {24} />
-          <Span>{value}</Span>
+          <>
+            {typeof icon === "string" ? (
+              <img src={icon} width={24} height={24} />
+            ) : (
+              icon
+            )}
+            <Span>{value}</Span>
+          </>
         </LogoWithText>
       ))}
     </SelectBody>

@@ -1,11 +1,8 @@
 // colors
 $color-primary: #3CD89D;
-$color-primary-rgba: rgba(60, 216, 157, 1);
-<<<<<<< HEAD
-$color-teal-600: #2BCC91;
-=======
-$color-teal-600: #0d9488;
->>>>>>> staging
+$color-primary-rgba: #3cd89d;
+$color-teal-600: #2bca90;
+$color-teal-600: rgb(43, 202, 144);
 $color-teal-100: #ccfbf1;
 $color-teal-50: #f0fdfa;
 $color-tab-container-background: black --var(--color-primary-rgba);
@@ -20,8 +17,8 @@ $color-gray-800: #1f2937;
 $color-gray-900: #111827;
 $color-gray-950: #030712;
 $color-gray-tiny: rgba(0, 0, 0, 0.05);
-
-
+$shadow-xl: 0 20px 25px -5px rgb(43 204 145 ), 0 8px 10px -6px rgb(43 204 145 );
+$wrapper-height: 500px;
 
 
 
