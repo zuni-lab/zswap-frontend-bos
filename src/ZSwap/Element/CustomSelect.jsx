@@ -11,9 +11,10 @@ const SelectBody = styled.div`
   bottom: ${(props) => props.bottom};
   left: ${(props) => props.left || 0};
   width: 100%;
+  max-height: 250px;
+  overflow: auto;
   padding: 8px 16px;
-  font-size: 24px;
-  font-weight: bold;
+  font-size: auto;
   color: black;
   background: white;
   border-radius: 8px;
@@ -29,8 +30,7 @@ const CustomSelect = styled.div`
   background: ${(props) => props.backgroundColor || "rgba(255, 255, 255, 0.8)"};
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: ${(props) => props.fontSize + "px" || "24px"};
-  font-weight: bold;
+  font-size: ${(props) => props.fontSize + "px" || "auto"};
   color: ${(props) => props.textColor || "black"};
   cursor: pointer;
   &:after {
@@ -51,11 +51,13 @@ const LogoWithText = styled.div`
   display: flex;
   align-items: center;
   cursor: pointer;
+  color: rgb(13, 17, 28);
+  font-size: 20px;
 `;
 
 const Span = styled.span`
-  font-size: ${(props) => props.fontSize || "24px"};
-  font-weight: ${(props) => props.fontWeight || "bold"};
+  font-size: ${(props) => props.fontSize || "auto"};
+  font-weight: ${(props) => props.fontWeight || "normal"};
   margin-left: ${(props) => props.marginLeft || "10px"};
 `;
 
@@ -89,15 +91,16 @@ return (
         }}
       >
         <LogoWithText>
-          {selectedItem.icon}
-          <Span>{selectedItem.value}</Span>
+          {selectedItem.icon ? 
+          <><img src = {selectedItem.icon} width = {24} height = {24} /> <Span>{selectedItem.value}</Span></> 
+          : <Span>Select token</Span>}
         </LogoWithText>
       </CustomSelect>
     ) : (
       <CustomSelect
-        backgroundColor="#2BCC91"
+        // backgroundColor="#2BCC91"
         fontSize={20}
-        textColor="white"
+        // textColor="white"
         onClick={() => {
           State.update({
             showList: !state.showList,
@@ -122,7 +125,7 @@ return (
             props.onChangeItem(value);
           }}
         >
-          {icon}
+          <img src = {icon} width = {24} height = {24} />
           <Span>{value}</Span>
         </LogoWithText>
       ))}
