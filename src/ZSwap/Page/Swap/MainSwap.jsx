@@ -215,18 +215,29 @@ const onClickMax = () => {
 };
 
 const SwapWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  //wrapper-height
+  height: 500px;
+  padding: 20px;
+  border-radius: 10px;
+  //shadow-xl
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+  color: black;
+`;
+
+const Container = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 60%;
+  align-items: center;
+  justify-content: center;
+  width: 95%;
   height: 100%;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 1px 2px 4px -1px rgba(60, 216, 157, 0.5),
-    1px 2px 4px -1px rgba(60, 216, 157, 0.5);
-  padding-bottom: 4px;
-  color: black;
+  gap: 8px;
 `;
 
 const ArrowWrapper = styled.div`
@@ -245,75 +256,77 @@ const ArrowWrapper = styled.div`
   cursor: pointer;
   &:hover {
     opacity: 0.9;
-    color: #2BCC91;
+    color: #2bcc91;
   }
 `;
 
 const onFirstTokenChange = (token) => {
   State.update({
-    firstSelectedToken: { ...firstSelectedToken, name: token },
+    firstSelectedToken: { ...state.firstSelectedToken, name: token },
   });
 };
 
 const onSecondTokenChange = (token) => {
   State.update({
-    secondSelectedToken: { ...secondSelectedToken, name: token },
+    secondSelectedToken: { ...state.secondSelectedToken, name: token },
   });
 };
 
 return (
   <SwapWrapper>
-    <Widget
-      src={`${config.ownerId}/widget/ZSwap.Element.Input`}
-      props={{
-        config: config,
-        label: "You pay",
-        value: state.token0,
-        inputError: state.inputError,
-        balance: nearBalance,
-        selectedToken: state.firstSelectedToken.name,
-        listToken: TOKEN_RECORDS,
-        showBalance: true,
-        onChange: onChange,
-        onClickMax: onClickMax,
-        onChangeToken: onFirstTokenChange,
-      }}
-    />
-    <Widget
-      src={`${config.ownerId}/widget/ZSwap.Element.Input`}
-      props={{
-        config: config,
-        label: "You receive",
-        value: state.token1,
-        inputError: state.inputError,
-        balance: nearBalance,
-        selectedToken: state.secondSelectedToken.name,
-        listToken: TOKEN_RECORDS,
-        showBalance: false,
-        selectPosition: {
-          bottom: "calc(100% + 8px)",
-        },
-        onChange: onChange,
-        onClickMax: onClickMax,
-        onChangeToken: onSecondTokenChange,
-      }}
-    />
-    <ArrowWrapper>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2.5}
-        stroke="currentColor"
-        width={24}
-        height={24}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75"
-        />
-      </svg>
-    </ArrowWrapper>
+    <Container>
+      <Widget
+        src={`${config.ownerId}/widget/ZSwap.Element.Input`}
+        props={{
+          config: config,
+          label: "You pay",
+          value: state.token0,
+          inputError: state.inputError,
+          balance: nearBalance,
+          selectedToken: state.firstSelectedToken.name,
+          listToken: TOKEN_RECORDS,
+          showBalance: true,
+          onChange: onChange,
+          onClickMax: onClickMax,
+          onChangeToken: onFirstTokenChange,
+        }}
+      />
+      <Widget
+        src={`${config.ownerId}/widget/ZSwap.Element.Input`}
+        props={{
+          config: config,
+          label: "You receive",
+          value: state.token1,
+          inputError: state.inputError,
+          balance: nearBalance,
+          selectedToken: state.secondSelectedToken.name,
+          listToken: TOKEN_RECORDS,
+          showBalance: false,
+          selectPosition: {
+            bottom: "calc(100% + 8px)",
+          },
+          onChange: onChange,
+          onClickMax: onClickMax,
+          onChangeToken: onSecondTokenChange,
+        }}
+      />
+      <ArrowWrapper>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2.5}
+          stroke="currentColor"
+          width={24}
+          height={24}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75"
+          />
+        </svg>
+      </ArrowWrapper>
+    </Container>
   </SwapWrapper>
 );

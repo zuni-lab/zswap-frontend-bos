@@ -1,6 +1,12 @@
 /** Constants */
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
+// interface TokenRecord {
+//   assetName: string;
+//   pairSymbol: string;
+//   logo: string;
+//   cmcLink: string;
+// }
 
 function initFetchListOfTokens(){
   const TOKEN_RECORDS = JSON.parse(
@@ -43,22 +49,22 @@ State.init({
   firstSelectedToken: {
     symbol: "",
     amount: 0,
-    priceInUSD: 0
+    priceInUSD: 0,
   },
   secondSelectedToken: {
     symbol: "",
     amount: 0,
-    priceInUSD: 0
+    priceInUSD: 0,
   },
   priceRange: {
     lowPrice: 0,
-    highPrice: INF
+    highPrice: INF,
   },
   TOKENS: {},
   fetchedTokensList: false,
   inputError: "",
   show_fee_choices: false,
-  fee_chosen: 0
+  fee_chosen: 0,
 });
 
 if(!state.fetchedTokensList){
@@ -76,16 +82,17 @@ if (!config) {
 }
 
 const Main = styled.div`
-  width: 80%;
-  min-height: 50vh;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  display: flex;
-  gap: 20px;
-  padding: 32px 20px;
+  width: 100%;
+  //wrapper-height
+  min-height: 500px;
+  padding: 40px;
   border-radius: 10px;
-  box-shadow: 1px 2px 6px -2px rgba(60, 216, 157, 0.5),
-    1px 2px 6px -2px rgba(60, 216, 157, 0.5);
+  //shadow-xl
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
   color: black;
 `;
 
@@ -94,7 +101,7 @@ const DialogWrapper = styled.div`
   border-radius: 10px;
   padding: 20px;
   color: black;
-  border: 1px solid #2BCC91;
+  border: 2px solid #2bcc91;
   background-color: white;
 `;
 
@@ -118,7 +125,7 @@ const Section = styled.div`
 
 const Horizontal = styled.hr`
   width: 100%;
-  background: #2BCC91;
+  background: #2bcc91;
   border: 0;
   height: 1px;
   border-radius: 9999px;
@@ -152,12 +159,13 @@ const connectWallet =
     return true;
   });
 
-
 const getPriceOfTokenIfNeeded = (token) => {
   if(state.TOKENS[token].priceInUSD < 0){
     console.log("Start fetching price for " + token + "...");
     asyncFetch(
-      "https://api.unmarshal.com/v1/pricestore/" + token + "?auth_key=9v0mXZlpj27qoEmabpGJ8amEICsKmRWl6KgVnCOs"
+      "https://api.unmarshal.com/v1/pricestore/" +
+        token +
+        "?auth_key=9v0mXZlpj27qoEmabpGJ8amEICsKmRWl6KgVnCOs"
     ).then((res) => {
       try{
         const price = Number(res.body[0].price);
@@ -176,12 +184,11 @@ const getPriceOfTokenIfNeeded = (token) => {
         // trigger re-rendering
         State.update({
           firstSelectedToken: { ...state.firstSelectedToken, priceInUSD: token == state.firstSelectedToken.symbol ? price : state.firstSelectedToken.priceInUSD },
-          secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? price : state.secondSelectedToken.priceInUSD },
+          secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? price : state.secondSelectedToken.priceInUSD }
         });
-      }catch(err){
+      } catch (err) {
         console.log(err);
       }
-    })
   }else{
     const price = state.TOKENS[token].priceInUSD;
     State.update({
@@ -189,31 +196,47 @@ const getPriceOfTokenIfNeeded = (token) => {
       secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? price : state.secondSelectedToken.priceInUSD },
     });
   }
-}
+};
 
 const onFirstTokenChange = (token) => {
-  if(token === state.secondSelectedToken.symbol){
+  if (token === state.secondSelectedToken.symbol) {
     State.update({
-      secondSelectedToken: { ...state.secondSelectedToken, symbol: "", amount: 0 },
+      secondSelectedToken: {
+        ...state.secondSelectedToken,
+        symbol: "",
+        amount: 0,
+      },
     });
   }
-  
+
   State.update({
-    firstSelectedToken: { ...state.firstSelectedToken, symbol: token, amount: 0 },
+    firstSelectedToken: {
+      ...state.firstSelectedToken,
+      symbol: token,
+      amount: 0,
+    },
   });
 
   getPriceOfTokenIfNeeded(token);
 };
 
 const onSecondTokenChange = (token) => {
-  if(token === state.firstSelectedToken.symbol){
+  if (token === state.firstSelectedToken.symbol) {
     State.update({
-      firstSelectedToken: { ...state.firstSelectedToken, symbol: "",  amount: 0 },
+      firstSelectedToken: {
+        ...state.firstSelectedToken,
+        symbol: "",
+        amount: 0,
+      },
     });
   }
 
   State.update({
-    secondSelectedToken: { ...state.secondSelectedToken, symbol: token,  amount: 0 },
+    secondSelectedToken: {
+      ...state.secondSelectedToken,
+      symbol: token,
+      amount: 0,
+    },
   });
 
   getPriceOfTokenIfNeeded(token);
@@ -238,99 +261,99 @@ const onSecondTokenChange = (token) => {
 
 /////////////////////////////////////////////////////////////////////////////////
 const ChooseFeeWrapper = styled.div`
-.fee_choices_container{
-  display: flex;
-  gap: 8px;
-}
-.fee_choice {
-display: flex;
-flex-direction: column;
-gap: 8px;
-padding: 12px 8px;
-cursor: pointer;
-width: 100%;
-border-radius: 12px;
-border: 1px solid rgb(210, 217, 238);
-}
+  .fee_choices_container {
+    display: flex;
+    gap: 8px;
+  }
+  .fee_choice {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgb(0 0 0 /0.05);
+  }
 
-.fee_choice_chosen{
-border: 1px solid rgb(43, 204, 145);
-}
-.fee_choice:hover{
-border: 1px solid rgb(43, 204, 145);
-}
+  .fee_choice_chosen {
+    border: 1px solid rgb(0 0 0 /0.05);
+  }
+  .fee_choice:hover {
+    border: 1px solid rgb(0 0 0 /0.05);
+  }
 
-.fee_choice .top{
-display: flex;
-justify-content: space-between;
-font-size: 14px
-}
+  .fee_choice .top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
 
-.fee_choice .top .tick_circle{
-background: rgb(43, 204, 145);
-width: 17px;
-height: 17px;
-display: flex;
-justify-content: center;
-align-items: center;
-border-radius: 50%;
-}
+  .fee_choice .top .tick_circle {
+    background: rgb(0 0 0 /0.05);
+    width: 17px;
+    height: 17px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+  }
 
-.fee_choice .mid{
-font-size: 12px;
-color: rgb(119, 128, 160);
-}
+  .fee_choice .mid {
+    font-size: 12px;
+    color: rgb(119, 128, 160);
+  }
 
-.fee_choice .bottom{
-background: rgb(232, 236, 251);
-border: unset;
-border-radius: 0.5rem;
-color: rgb(0, 0, 0);
-padding: 4px 6px;
-font-weight: 500;
-font-size: 10px;
-width: max-content;
-}
+  .fee_choice .bottom {
+    background: rgb(0 0 0 /0.05);
+    border: unset;
+    border-radius: 0.5rem;
+    color: rgb(0, 0, 0);
+    padding: 4px 6px;
+    font-weight: 500;
+    font-size: 10px;
+    width: max-content;
+  }
 
-.fee_input_container{
-  display: flex;
-  justify-content: space-between;
-  border: 1px solid rgb(232, 236, 251);
-  padding: 1rem;
-  border-radius: 16px;
-  margin-bottom: 12px;
-  margin-top: 12px;
-}
-.fee_input_container .fee_info{
-  display: flex;
-  flex-direction: column;
-}
-.fee_input_container .fee_info .fee_tier{
-  color: rgb(13, 17, 28);
-  font-weight: 600;
-}
+  .fee_input_container {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid rgb(0 0 0 /0.05);
+    padding: 1rem;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    margin-top: 12px;
+  }
+  .fee_input_container .fee_info {
+    display: flex;
+    flex-direction: column;
+  }
+  .fee_input_container .fee_info .fee_tier {
+    color: rgb(13, 17, 28);
+    font-weight: 600;
+  }
 
-.fee_input_container .fee_info .percent_select{
-  background: rgb(232, 236, 251);
-  border: unset;
-  border-radius: 0.5rem;
-  color: rgb(0, 0, 0);
-  padding: 4px 6px;
-  font-weight: 500;
-  font-size: 10px;
-  width: max-content;
-}
+  .fee_input_container .fee_info .percent_select {
+    background: rgb(0 0 0 /0.05);
+    border: unset;
+    border-radius: 0.5rem;
+    color: rgb(0, 0, 0);
+    padding: 4px 6px;
+    font-weight: 500;
+    font-size: 10px;
+    width: max-content;
+  }
 
-.fee_input_container .toggle_fee_choices{
-  color: rgb(119, 128, 160);
-  font-size: 16px;
-  font-weight: 500;
-  display: flex;
-  flex-direction: column;
-  height: revert;
-  justify-content: center;
-  cursor: pointer;
-}
+  .fee_input_container .toggle_fee_choices {
+    color: rgb(119, 128, 160);
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    height: revert;
+    justify-content: center;
+    cursor: pointer;
+  }
 `;
 
 const fee_descriptions = [
@@ -403,102 +426,102 @@ const ChooseFeeForm = (
 );
 
 const ChooseDepositAmountWrapper = styled.div`
-.amount_input_container{
-  max-width: 500px;
-  border-radius: 20px;
-  border: 1px solid rgb(255, 255, 255);
-  background-color: rgb(245, 246, 252);
-  padding: 1rem 1rem 0.75rem;
-}
+  .amount_input_container {
+    max-width: 500px;
+    border-radius: 20px;
+    border: 1px solid rgb(255, 255, 255);
+    background-color: rgb(245, 246, 252);
+    padding: 1rem 1rem 0.75rem;
+  }
 
-.top_row{
-  display: flex;
-  justify-content: space-between;
-}
-.bottom_row{
-  display: flex;
-  justify-content: space-between;
-}
-.amount_input_container:hover{
-  border: 1px solid rgb(184, 192, 220);
-}
+  .top_row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .bottom_row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .amount_input_container:hover {
+    border: 1px solid rgb(184, 192, 220);
+  }
 
-.amount_input{
-  width: 100%;
-  transition: opacity 0.2s ease-in-out 0s;
-  text-align: left;
-  color: rgb(13, 17, 28);
-  font-weight: 400;
-  outline: none;
-  border: medium;
-  flex: 1 1 auto;
-  background-color: transparent;
-  font-size: 28px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  appearance: textfield;
-  padding: 0;
-}
+  .amount_input {
+    width: 100%;
+    transition: opacity 0.2s ease-in-out 0s;
+    text-align: left;
+    color: rgb(13, 17, 28);
+    font-weight: 400;
+    outline: none;
+    border: medium;
+    flex: 1 1 auto;
+    background-color: transparent;
+    font-size: 28px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    appearance: textfield;
+    padding: 0;
+  }
 
-.usd_valuation{
-  box-sizing: border-box;
-  font-weight: 400;
-  font-size: 14px;
-  color: rgb(119, 128, 160);
-}
+  .usd_valuation {
+    box-sizing: border-box;
+    font-weight: 400;
+    font-size: 14px;
+    color: rgb(119, 128, 160);
+  }
 
-.top_row .token_name{
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: space-between;
-  background-color: rgb(232, 236, 251);
-  color: rgb(13, 17, 28);
-  cursor: pointer;
-  border-radius: 16px;
-  outline: none;
-  user-select: none;
-  border: medium;
-  font-size: 24px;
-  font-weight: 500;
-  height: 2.4rem;
-  width: initial;
-  padding: 0px 8px;
-  margin-bottom: 8px;
-  margin-left: 12px;
-  font-size: 20px;
-}
+  .top_row .token_name {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgb(0 0 0 /0.05);
+    color: rgb(13, 17, 28);
+    cursor: pointer;
+    border-radius: 16px;
+    outline: none;
+    user-select: none;
+    border: medium;
+    font-size: 24px;
+    font-weight: 500;
+    height: 2.4rem;
+    width: initial;
+    padding: 0px 8px;
+    margin-bottom: 8px;
+    margin-left: 12px;
+    font-size: 20px;
+  }
 
-.top_row .token_name img{
-  height: 24px;
-  width: 24px;
-  border-radius: 50%;
-}
-.bottom_row .balance_container{
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-.bottom_row .balance_container .balance{
-  font-weight: 500;
-  font-size: 14px;
-}
-.bottom_row .balance_container .max_balance_btn: hover {
-  opacity: 0.8;
-}
-.bottom_row .balance_container .max_balance_btn {
-  background-color: rgb(21, 213, 143);
-  border: medium;
-  border-radius: 12px;
-  color: white;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 500;
-  margin-left: 0.25rem;
-  opacity: 1;
-  padding: 4px 6px;
-  pointer-events: initial;
-}
+  .top_row .token_name img {
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+  }
+  .bottom_row .balance_container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .bottom_row .balance_container .balance {
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .bottom_row.balance_container.max_balance_btn: hover {
+    opacity: 0.8;
+  }
+  .bottom_row .balance_container .max_balance_btn {
+    background-color: rgb(21, 213, 143);
+    border: medium;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 0.25rem;
+    opacity: 1;
+    padding: 4px 6px;
+    pointer-events: initial;
+  }
 `;
 const ChooseDepositAmount = (
   <ChooseDepositAmountWrapper>
@@ -512,9 +535,9 @@ const ChooseDepositAmount = (
             State.update({
               firstSelectedToken: {
                 ...state.firstSelectedToken,
-                amount: Number(e.target.value)
-              }
-            })
+                amount: Number(e.target.value),
+              },
+            });
           }}
         />
         {state.firstSelectedToken.symbol && <div class="token_name">
@@ -538,9 +561,9 @@ const ChooseDepositAmount = (
             State.update({
               secondSelectedToken: {
                 ...state.secondSelectedToken,
-                amount: Number(e.target.value)
-              }
-            })
+                amount: Number(e.target.value),
+              },
+            });
           }}
         />
         {state.secondSelectedToken.symbol && <div class="token_name">
@@ -562,119 +585,126 @@ const ChooseDepositAmount = (
 /////////////////////////////////////////////////////////////////////////////////
 
 const ChoosePriceRangeWrapper = styled.div`
-.header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
 
-.header .full_range_btn{
-  background-color: transparent;
-  padding: 6px;
-  text-align: center;
-  border-radius: 8px;
-  color: rgb(13, 17, 28);
-  cursor: pointer;
-  border: 1px solid rgb(210, 217, 238);
-  font-weight: 400;
-  font-size: 12px;
-}
+  .header .full_range_btn {
+    background-color: transparent;
+    padding: 6px;
+    text-align: center;
+    border-radius: 8px;
+    color: rgb(13, 17, 28);
+    cursor: pointer;
+    border: 1px solid rgb(0 0 0 /0.05);
+    font-weight: 400;
+    font-size: 12px;
+  }
 
-.header .full_range_btn:hover{
-  box-shadow: rgb(152, 161, 192) 0px 0px 0px 1px;
-}
-.price_choices_container{
-  max-width: 500px;
-}
+  .header .full_range_btn:hover {
+    box-shadow: rgb(152, 161, 192) 0px 0px 0px 1px;
+  }
+  .price_choices_container {
+    max-width: 500px;
+  }
 
-.price_choices_container .price_choice {
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  cursor: pointer;
-  border-radius: 12px;
-  border: 1px solid rgb(210, 217, 238);
-}
+  .price_choices_container .price_choice {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 12px;
+    border: 1px solid rgb(0 0 0 /0.05);
+  }
 
-.price_choices_container .price_choice:focus, .price_choices_container .price_choice:focus-within, .price_choices_container .price_choice:target{
-  border-color: #2BCC91;
-}
+  .price_choices_container .price_choice:focus,
+  .price_choices_container .price_choice:focus-within,
+  .price_choices_container .price_choice:target {
+    border-color: #2bcc91;
+  }
 
-.price_choice .top{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .price_choice .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.price_choice .top .price_label{
-  font-size: 12px;
-  text-align: center;
-  color: rgb(119, 128, 160);
-}
+  .price_choice .top .price_label {
+    font-size: 12px;
+    text-align: center;
+    color: rgb(119, 128, 160);
+  }
 
-.price_choice .price_notation_label{
-  min-width: 0px;
-  font-size: 12px;
-  text-align: center;
-  color: rgb(119, 128, 160);
-}
+  .price_choice .price_notation_label {
+    min-width: 0px;
+    font-size: 12px;
+    text-align: center;
+    color: rgb(119, 128, 160);
+  }
 
-.price_choice .mid{
-  display: flex;
-  width: 100%;
-}
+  .price_choice .mid {
+    display: flex;
+    width: 100%;
+  }
 
-.price_choice .mid .price_input{
-  font-weight: 500;
-  padding: 0px 10px;
-  color: rgb(13, 17, 28);
-  width: 0px;
-  font-weight: 400;
-  outline: none;
-  border: medium;
-  flex: 1 1 auto;
-  background-color: transparent;
-  font-size: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0px;
-  appearance: textfield;
-  font-size: 20px;
-}
+  .price_choice .mid .price_input {
+    font-weight: 500;
+    padding: 0px 10px;
+    color: rgb(13, 17, 28);
+    width: 0px;
+    font-weight: 400;
+    outline: none;
+    border: medium;
+    flex: 1 1 auto;
+    background-color: transparent;
+    font-size: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0px;
+    appearance: textfield;
+    font-size: 20px;
+  }
 
-.price_adjust_btn{
-  color: rgb(13, 17, 28) !important;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.price_adjust_btn:hover{
-  background: rgb(210, 218, 247);
-  border-radius: 8px;
-}
+  .price_adjust_btn {
+    color: rgb(13, 17, 28) !important;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .price_adjust_btn:hover {
+    background: rgb(210, 218, 247);
+    border-radius: 8px;
+  }
 
-.price_choice .bottom{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .price_choice .bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 `;
 const ChoosePriceRangeForm = (
   <ChoosePriceRangeWrapper>
-    <div class = "header">
+    <div class="header">
       <Label fontSize={18} justifyContent={"flex-start"}>
         Select price range
       </Label>
-      <div class="full_range_btn" onClick={() => {
-        State.update({
-          priceRange: { lowPrice: 0, highPrice: INF }
-        })
-      }}>Full range</div>
+      <div
+        class="full_range_btn"
+        onClick={() => {
+          State.update({
+            priceRange: { lowPrice: 0, highPrice: INF },
+          });
+        }}
+      >
+        Full range
+      </div>
     </div>
     <div class="price_choices_container">
       <div class="price_choice">
@@ -698,13 +728,22 @@ const ChoosePriceRangeForm = (
             value={state.priceRange.lowPrice}
             onChange={(e) => {
               State.update({
-                priceRange: {...state.priceRange, lowPrice: Number(e.target.value)}
-              })
+                priceRange: {
+                  ...state.priceRange,
+                  lowPrice: Number(e.target.value),
+                },
+              });
             }}
           />
         </div>
         <div class="bottom">
-          <div class="price_notation_label">{state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && state.firstSelectedToken.symbol + " per " + state.secondSelectedToken.symbol}</div>
+          <div class="price_notation_label">
+            {state.firstSelectedToken.symbol &&
+              state.secondSelectedToken.symbol &&
+              state.firstSelectedToken.symbol +
+                " per " +
+                state.secondSelectedToken.symbol}
+          </div>
           <div class="price_adjust_btn minus">-</div>
         </div>
       </div>
@@ -730,13 +769,22 @@ const ChoosePriceRangeForm = (
             value={state.priceRange.highPrice == INF ? "oo" : JSON.stringify(state.priceRange.highPrice)}
             onChange={(e) => {
               State.update({
-                priceRange: {...state.priceRange, highPrice: Number(e.target.value)}
-              })
+                priceRange: {
+                  ...state.priceRange,
+                  highPrice: Number(e.target.value),
+                },
+              });
             }}
           />
         </div>
         <div class="bottom">
-        <div class="price_notation_label">{state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && state.firstSelectedToken.symbol + " per " + state.secondSelectedToken.symbol}</div>
+          <div class="price_notation_label">
+            {state.firstSelectedToken.symbol &&
+              state.secondSelectedToken.symbol &&
+              state.firstSelectedToken.symbol +
+                " per " +
+                state.secondSelectedToken.symbol}
+          </div>
           <div class="price_adjust_btn minus">-</div>
         </div>
       </div>
@@ -750,7 +798,8 @@ const childSrc = context.networkId;
 const accountId = context.accountId;
 
 const NewPositionButton = (
-  <Widget src={`${config.ownerId}/widget/ZSwap.Element.Button`}
+  <Widget
+    src={`${config.ownerId}/widget/ZSwap.Element.Button`}
     props={{
       onClick: () => {
         State.update({ showDialog: true });
@@ -794,22 +843,18 @@ const NewPositionButton = (
 );
 
 const ProvideLiquidityButton = (
-  <Widget src={`${config.ownerId}/widget/ZSwap.Element.Button`}
-  props={{
-    onClick: () => {
-      
-    },
-    text: (
-      "Provide liquidity"
-    ),
-    styles: {
-      width: "100%",
-      color: "white",
-    },
-  }}
+  <Widget
+    src={`${config.ownerId}/widget/ZSwap.Element.Button`}
+    props={{
+      onClick: () => {},
+      text: "Provide liquidity",
+      styles: {
+        width: "100%",
+        color: "white",
+      },
+    }}
   />
 );
-
 
 const srcDocChart = `
 <style>
@@ -1018,30 +1063,31 @@ const PoolDiaglog = (
               }}
             />
           </div>
-          { ChooseFeeForm }
-          { ChooseDepositAmount }
+          {ChooseFeeForm}
+          {ChooseDepositAmount}
         </Section>
         <Section>
-          <div
-            style={{
-            }}
-          >
-            {ChoosePriceRangeForm}
-          </div>
+          <div style={{}}>{ChoosePriceRangeForm}</div>
         </Section>
       </DialogBody>
-      {state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && <iframe
-        className="border"
-        style={{
-          width: "100%",
-          height: "525px",
-        }}
-        srcDoc={srcDocChart}
-        message={{ exp: state.text || "", currentPrice: state.firstSelectedToken.priceInUSD / (state.secondSelectedToken.priceInUSD ?? 0) }}
-        onMessage={(res1) => State.update({ res1 })}
-      />
-      }
-      
+      {state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && (
+        <iframe
+          className="border"
+          style={{
+            width: "100%",
+            height: "525px",
+          }}
+          srcDoc={srcDocChart}
+          message={{
+            exp: state.text || "",
+            currentPrice:
+              state.firstSelectedToken.priceInUSD /
+              (state.secondSelectedToken.priceInUSD ?? 0),
+          }}
+          onMessage={(res1) => State.update({ res1 })}
+        />
+      )}
+
       {ProvideLiquidityButton}
     </DialogWrapper>
   </>
@@ -1057,29 +1103,34 @@ return (
         gap: 2,
       }}
     >
-      {connectWallet() && (
-        accountId ? (!state.showDialog && NewPositionButton) : <Widget
-        src={`${config.ownerId}/widget/ZSwap.Element.Button`}
-        props={{
-          onClick: () => {
-            console.log("Connecting...");
-          },
-          padding: "not normal",
-          width: "max-content",
-          text: "Please connect to your wallet",
-          styles: {
-            display: "flex",
-            width: "100%",
-            justifyContent: "center",
-            fontSize: "16px",
-            color: "white"
-          },
-        }}
-        />
-      )}
+      {connectWallet() &&
+        (accountId ? (
+          !state.showDialog && NewPositionButton
+        ) : (
+          <Widget
+            src={`${config.ownerId}/widget/ZSwap.Element.Button`}
+            props={{
+              onClick: () => {
+                console.log("Connecting...");
+              },
+              padding: "not normal",
+              width: "max-content",
+              text: "Please connect to your wallet",
+              styles: {
+                display: "flex",
+                width: "100%",
+                justifyContent: "center",
+                fontSize: "16px",
+                color: "white",
+              },
+            }}
+          />
+        ))}
     </div>
 
-    {state.showDialog ? PoolDiaglog :
+    {state.showDialog ? (
+      PoolDiaglog
+    ) : (
       <div
         style={{
           flex: 1,
@@ -1087,9 +1138,9 @@ return (
           flexDirection: "column",
           justifyContent: "center",
         }}
-        >
+      >
         <h4>Your active V3 liquidity positions will appear here</h4>
       </div>
-    }
+    )}
   </Main>
 );
