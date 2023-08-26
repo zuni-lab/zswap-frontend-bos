@@ -1,46 +1,27 @@
 /** Constants */
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
-// interface TokenRecord {
-//   assetName: string;
-//   pairSymbol: string;
-//   logo: string;
-//   cmcLink: string;
-// }
 
-function initFetchListOfTokens(){
-  const TOKEN_RECORDS = JSON.parse(
-    fetch(
-      "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
-    ).body
-  );
-  
-  const TOKENS = {};
-  
-  Object.keys(TOKEN_RECORDS).forEach((pair) => {
-    if (pair.slice(-4) === "USDT") {
-      const tokenSymbol = pair.slice(0, -5);
+const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
 
-      if(["ETH", "BSC", "BTC", "ADA", "NEAR"].includes(tokenSymbol.toUpperCase()))
-      if (tokenSymbol) {
-        TOKENS[tokenSymbol] = {
-          ...TOKEN_RECORDS[pair],
-          priceInUSD: -1,
-        };
-      }
-    }
+function $fetchTokenMetadata() {
+  console.log("Fetching token metadata...");
+  const metadata = TOKEN_ACCOUNTS.map((t) => {
+    console.log({ t });
+    const res = Near.view(t, "ft_metadata", {});
+    console.log({ res });
   });
-  return TOKENS;
+  console.log("Tokens are ", metadata);
+  const tokens = metadata.map((t) => ({
+    value: t.symbol,
+    icon: t.icon,
+  }));
+  State.update({
+    TOKENS: tokens,
+  });
 }
 
-// {
-//   "1INCH": {
-//     "assetName": "1inch Network",
-//     "pairSymbol": "1INCH/USDT",
-//     "logo": "https://s2.coinmarketcap.com/static/img/coins/64x64/8104.png",
-//     "cmcLink": "https://www.binance.com/en/trade/1INCH_USDT"
-//   }
-// }
+$fetchTokenMetadata();
 
 const INF = 1e308;
 
@@ -67,12 +48,23 @@ State.init({
   fee_chosen: 0,
 });
 
-if(!state.fetchedTokensList){
+function run() {
+  Near.call(
+    "znear.zswap.testnet",
+    "mint",
+    {
+      receiver_id: context.accountId,
+      amount: "100000",
+    },
+    300 * 1000000000000,
+    1000000000000000000000000
+  );
+}
+
+if (!state.fetchedTokensList) {
   State.update({
-    TOKENS: initFetchListOfTokens(),
-    fetchedTokensList: true
+    fetchedTokensList: true,
   });
-  console.log("Got it: ", state.TOKENS);
 }
 
 /** Static variables */
@@ -160,40 +152,65 @@ const connectWallet =
   });
 
 const getPriceOfTokenIfNeeded = (token) => {
-  if(state.TOKENS[token].priceInUSD < 0){
+  if (state.TOKENS[token].priceInUSD < 0) {
     console.log("Start fetching price for " + token + "...");
     asyncFetch(
       "https://api.unmarshal.com/v1/pricestore/" +
         token +
         "?auth_key=9v0mXZlpj27qoEmabpGJ8amEICsKmRWl6KgVnCOs"
     ).then((res) => {
-      try{
+      try {
         const price = Number(res.body[0].price);
         State.update({
           TOKENS: {
             ...state.TOKENS,
             [token]: {
               ...state.TOKENS[token],
-              priceInUSD: price
-            }
-          }
+              priceInUSD: price,
+            },
+          },
         });
 
         console.log("Price of " + token + " is ", price);
-        
+
         // trigger re-rendering
         State.update({
-          firstSelectedToken: { ...state.firstSelectedToken, priceInUSD: token == state.firstSelectedToken.symbol ? price : state.firstSelectedToken.priceInUSD },
-          secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? price : state.secondSelectedToken.priceInUSD }
+          firstSelectedToken: {
+            ...state.firstSelectedToken,
+            priceInUSD:
+              token == state.firstSelectedToken.symbol
+                ? price
+                : state.firstSelectedToken.priceInUSD,
+          },
+          secondSelectedToken: {
+            ...state.secondSelectedToken,
+            priceInUSD:
+              token == state.secondSelectedToken.symbol
+                ? price
+                : state.secondSelectedToken.priceInUSD,
+          },
         });
       } catch (err) {
         console.log(err);
       }
-  }else{
+    });
+  } else {
     const price = state.TOKENS[token].priceInUSD;
     State.update({
-      firstSelectedToken: { ...state.firstSelectedToken, priceInUSD: token == state.firstSelectedToken.symbol ? price : state.firstSelectedToken.priceInUSD },
-      secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? price : state.secondSelectedToken.priceInUSD },
+      firstSelectedToken: {
+        ...state.firstSelectedToken,
+        priceInUSD:
+          token == state.firstSelectedToken.symbol
+            ? price
+            : state.firstSelectedToken.priceInUSD,
+      },
+      secondSelectedToken: {
+        ...state.secondSelectedToken,
+        priceInUSD:
+          token == state.secondSelectedToken.symbol
+            ? price
+            : state.secondSelectedToken.priceInUSD,
+      },
     });
   }
 };
@@ -530,7 +547,18 @@ const ChooseDepositAmount = (
     </Label>
     <div class="amount_input_container">
       <div class="top_row">
-      <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="20" spellcheck="false" value={state.firstSelectedToken.amount}
+        <input
+          class="amount_input"
+          inputmode="decimal"
+          autocomplete="off"
+          autocorrect="off"
+          type="text"
+          pattern="^[0-9]*[.,]?[0-9]*$"
+          placeholder="0"
+          minlength="1"
+          maxlength="20"
+          spellcheck="false"
+          value={state.firstSelectedToken.amount}
           onChange={(e) => {
             State.update({
               firstSelectedToken: {
@@ -540,13 +568,30 @@ const ChooseDepositAmount = (
             });
           }}
         />
-        {state.firstSelectedToken.symbol && <div class="token_name">
-          <img src = {state.TOKENS[state.firstSelectedToken.symbol].logo} width={24} height={24} alt = {state.firstSelectedToken.symbol} />
-          {state.firstSelectedToken.symbol}
-          </div>}
+        {state.firstSelectedToken.symbol && (
+          <div class="token_name">
+            <img
+              src={state.TOKENS[state.firstSelectedToken.symbol].logo}
+              width={24}
+              height={24}
+              alt={state.firstSelectedToken.symbol}
+            />
+            {state.firstSelectedToken.symbol}
+          </div>
+        )}
       </div>
       <div class="bottom_row">
-        <div class="usd_valuation">{state.firstSelectedToken.symbol ? <>${state.firstSelectedToken.amount * state.firstSelectedToken.priceInUSD}</> : "-"}</div>
+        <div class="usd_valuation">
+          {state.firstSelectedToken.symbol ? (
+            <>
+              $
+              {state.firstSelectedToken.amount *
+                state.firstSelectedToken.priceInUSD}
+            </>
+          ) : (
+            "-"
+          )}
+        </div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
           <div class="max_balance_btn">MAX</div>
@@ -556,7 +601,18 @@ const ChooseDepositAmount = (
 
     <div class="amount_input_container">
       <div class="top_row">
-        <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="20" spellcheck="false" value={state.secondSelectedToken.amount}
+        <input
+          class="amount_input"
+          inputmode="decimal"
+          autocomplete="off"
+          autocorrect="off"
+          type="text"
+          pattern="^[0-9]*[.,]?[0-9]*$"
+          placeholder="0"
+          minlength="1"
+          maxlength="20"
+          spellcheck="false"
+          value={state.secondSelectedToken.amount}
           onChange={(e) => {
             State.update({
               secondSelectedToken: {
@@ -566,13 +622,30 @@ const ChooseDepositAmount = (
             });
           }}
         />
-        {state.secondSelectedToken.symbol && <div class="token_name">
-          <img src = {state.TOKENS[state.secondSelectedToken.symbol].logo} width={24} height={24} alt = {state.secondSelectedToken.symbol} />
-          {state.secondSelectedToken.symbol}
-          </div>}
+        {state.secondSelectedToken.symbol && (
+          <div class="token_name">
+            <img
+              src={state.TOKENS[state.secondSelectedToken.symbol].logo}
+              width={24}
+              height={24}
+              alt={state.secondSelectedToken.symbol}
+            />
+            {state.secondSelectedToken.symbol}
+          </div>
+        )}
       </div>
       <div class="bottom_row">
-      <div class="usd_valuation">{state.secondSelectedToken.symbol ? <>${state.secondSelectedToken.amount * state.secondSelectedToken.priceInUSD}</> : "-"}</div>
+        <div class="usd_valuation">
+          {state.secondSelectedToken.symbol ? (
+            <>
+              $
+              {state.secondSelectedToken.amount *
+                state.secondSelectedToken.priceInUSD}
+            </>
+          ) : (
+            "-"
+          )}
+        </div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
           <div class="max_balance_btn">MAX</div>
@@ -766,7 +839,11 @@ const ChoosePriceRangeForm = (
             max={INF}
             maxlength="20"
             spellcheck="false"
-            value={state.priceRange.highPrice == INF ? "oo" : JSON.stringify(state.priceRange.highPrice)}
+            value={
+              state.priceRange.highPrice == INF
+                ? "oo"
+                : JSON.stringify(state.priceRange.highPrice)
+            }
             onChange={(e) => {
               State.update({
                 priceRange: {
@@ -1031,14 +1108,10 @@ const PoolDiaglog = (
             <Widget
               src={`${config.ownerId}/widget/ZSwap.Element.CustomSelect`}
               props={{
-                selectedItem:
-                  state.firstSelectedToken.symbol
-                    ? state.firstSelectedToken.symbol
-                    : "",
-                list: Object.keys(state.TOKENS).map((symbol) => ({
-                  value: symbol,
-                  icon: state.TOKENS[symbol].logo,
-                })),
+                selectedItem: state.firstSelectedToken.symbol
+                  ? state.firstSelectedToken.symbol
+                  : "",
+                list: state.TOKENS,
                 onChangeItem: onFirstTokenChange,
               }}
               style={{
@@ -1048,10 +1121,9 @@ const PoolDiaglog = (
             <Widget
               src={`${config.ownerId}/widget/ZSwap.Element.CustomSelect`}
               props={{
-                selectedItem:
-                  state.secondSelectedToken.symbol
-                    ? state.secondSelectedToken.symbol
-                    : "",
+                selectedItem: state.secondSelectedToken.symbol
+                  ? state.secondSelectedToken.symbol
+                  : "",
                 list: Object.keys(state.TOKENS).map((symbol) => ({
                   value: symbol,
                   icon: state.TOKENS[symbol].logo,
