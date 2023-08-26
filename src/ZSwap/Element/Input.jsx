@@ -5,7 +5,7 @@ const Wrapper = styled.div`
   border-radius: 10px;
   padding: 20px;
   color: black;
-  border: 1px solid #2BCC91;
+  border: 2px solid #2bcc91;
   background-color: rgba(13, 148, 136, 0.05);
   min-height: 170px;
   cursor: default;
@@ -19,7 +19,7 @@ const NEARInputContainer = styled.div`
 `;
 
 const BalanceContainer = styled.div`
-  color: #2BCC91;
+  color: #2bcc91;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -33,7 +33,7 @@ const BalanceContainer = styled.div`
 const MaxTexture = styled.div`
   font-size: 20px;
   font-weight: 700;
-  color: #2BCC91;
+  color: #2bcc91;
   cursor: pointer;
   &:hover {
     opacity: 0.8;
