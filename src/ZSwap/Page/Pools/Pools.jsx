@@ -1,25 +1,31 @@
 /** Constants */
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
-const TOKEN_RECORDS = JSON.parse(
-  fetch(
-    "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
-  ).body
-);
 
-const TOKENS = {};
+function initFetchListOfTokens(){
+  const TOKEN_RECORDS = JSON.parse(
+    fetch(
+      "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
+    ).body
+  );
+  
+  const TOKENS = {};
+  
+  Object.keys(TOKEN_RECORDS).forEach((pair) => {
+    if (pair.slice(-4) === "USDT") {
+      const tokenSymbol = pair.slice(0, -5);
 
-Object.keys(TOKEN_RECORDS).forEach((pair) => {
-  if (pair.slice(-4) === "USDT") {
-    const tokenSymbol = pair.slice(0, -5);
-    if (tokenSymbol) {
-      TOKENS[tokenSymbol] = {
-        ...TOKEN_RECORDS[pair],
-        priceInUSD: -1,
-      };
+      if(["ETH", "BSC", "BTC", "ADA", "NEAR"].includes(tokenSymbol.toUpperCase()))
+      if (tokenSymbol) {
+        TOKENS[tokenSymbol] = {
+          ...TOKEN_RECORDS[pair],
+          priceInUSD: -1,
+        };
+      }
     }
-  }
-});
+  });
+  return TOKENS;
+}
 
 // {
 //   "1INCH": {
@@ -29,7 +35,6 @@ Object.keys(TOKEN_RECORDS).forEach((pair) => {
 //     "cmcLink": "https://www.binance.com/en/trade/1INCH_USDT"
 //   }
 // }
-
 
 const INF = 1e308;
 
@@ -49,10 +54,20 @@ State.init({
     lowPrice: 0,
     highPrice: INF
   },
+  TOKENS: {},
+  fetchedTokensList: false,
   inputError: "",
   show_fee_choices: false,
   fee_chosen: 0
 });
+
+if(!state.fetchedTokensList){
+  State.update({
+    TOKENS: initFetchListOfTokens(),
+    fetchedTokensList: true
+  });
+  console.log("Got it: ", state.TOKENS);
+}
 
 /** Static variables */
 const { config } = props;
@@ -139,18 +154,18 @@ const connectWallet =
 
 
 const getPriceOfTokenIfNeeded = (token) => {
-  if(TOKENS[token].priceInUSD < 0){
+  if(state.TOKENS[token].priceInUSD < 0){
     console.log("Start fetching price for " + token + "...");
     asyncFetch(
       "https://api.unmarshal.com/v1/pricestore/" + token + "?auth_key=9v0mXZlpj27qoEmabpGJ8amEICsKmRWl6KgVnCOs"
     ).then((res) => {
       try{
-        TOKENS[token] = {
-          ...TOKENS[token],
+        state.TOKENS[token] = {
+          ...state.TOKENS[token],
           priceInUSD: Number(res.body[0].price)
         }
 
-        console.log("Price of " + token + " is ", TOKENS[token].priceInUSD);
+        console.log("Price of " + token + " is ", state.TOKENS[token].priceInUSD);
         
         // trigger re-rendering
         State.update({
@@ -491,7 +506,7 @@ const ChooseDepositAmount = (
           }}
         />
         {state.firstSelectedToken.symbol && <div class="token_name">
-          <img src = {TOKENS[state.firstSelectedToken.symbol].logo} width={24} height={24} alt = {state.firstSelectedToken.symbol} />
+          <img src = {state.TOKENS[state.firstSelectedToken.symbol].logo} width={24} height={24} alt = {state.firstSelectedToken.symbol} />
           {state.firstSelectedToken.symbol}
           </div>}
       </div>
@@ -517,7 +532,7 @@ const ChooseDepositAmount = (
           }}
         />
         {state.secondSelectedToken.symbol && <div class="token_name">
-          <img src = {TOKENS[state.secondSelectedToken.symbol].logo} width={24} height={24} alt = {state.secondSelectedToken.symbol} />
+          <img src = {state.TOKENS[state.secondSelectedToken.symbol].logo} width={24} height={24} alt = {state.secondSelectedToken.symbol} />
           {state.secondSelectedToken.symbol}
           </div>}
       </div>
@@ -963,10 +978,11 @@ const PoolDiaglog = (
                   state.firstSelectedToken.symbol
                     ? state.firstSelectedToken.symbol
                     : "",
-                list: Object.keys(TOKENS).map((symbol) => ({
-                  value: symbol,
-                  icon: TOKENS[symbol].logo,
-                })),
+                list: [],
+                // Object.keys(state.TOKENS).map((symbol) => ({
+                //   value: symbol,
+                //   icon: state.TOKENS[symbol].logo,
+                // })),
                 onChangeItem: onFirstTokenChange,
               }}
               style={{
@@ -980,10 +996,11 @@ const PoolDiaglog = (
                   state.secondSelectedToken.symbol
                     ? state.secondSelectedToken.symbol
                     : "",
-                list: Object.keys(TOKENS).map((symbol) => ({
-                  value: symbol,
-                  icon: TOKENS[symbol].logo,
-                })),
+                list: [],
+                // Object.keys(state.TOKENS).map((symbol) => ({
+                //   value: symbol,
+                //   icon: state.TOKENS[symbol].logo,
+                // })),
                 onChangeItem: onSecondTokenChange,
               }}
               style={{
