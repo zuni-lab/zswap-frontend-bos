@@ -2,7 +2,7 @@ const Container = styled.div`
   display: flex;
   gap: 16px;
   position: relative;
-  width: ${(props) => props.width || "100%"};
+  width: ${(props) => props.width ?? "100%"};
 `;
 
 const SelectBody = styled.div`
@@ -29,13 +29,15 @@ const CustomSelect = styled.div`
   align-items: center;
   width: 100%;
   height: 100%;
-  background: ${(props) => props.backgroundColor || "rgba(255, 255, 255, 0.8)"};
+  background: ${props.background ?? "rgba(255, 255, 255, 0.8)"};
   border-radius: 8px;
+  border: 1px solid transparent;
   padding: 8px 16px;
-  font-size: ${(props) => props.fontSize + "px" || "auto"};
-  color: ${(props) => props.textColor || "black"};
+  font-size: ${props.fontSize ?? "auto"};
+  color: ${props.textColor ?? "black"};
   cursor: pointer;
-  &:after {
+  ${props.selectedItem === "" &&
+  `&:after {
     content: "";
     position: absolute;
     top: 50%;
@@ -45,8 +47,8 @@ const CustomSelect = styled.div`
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid ${(props) => props.textColor || "gray"};
-  }
+    border-top: 6px solid ${props.textColor ?? "gray"};
+  }`}
 `;
 
 const LogoWithText = styled.div`
@@ -54,7 +56,7 @@ const LogoWithText = styled.div`
   align-items: center;
   cursor: pointer;
   color: rgb(13, 17, 28);
-  font-size: 20px;
+  font-size: 16px;
 `;
 
 const Span = styled.span`
@@ -81,7 +83,6 @@ const selectedItem = props.list.find(
 const otherItems = props.list.filter(
   (item) => item.value !== props.selectedItem
 );
-// console.log(props, "changed");
 
 return (
   <Container>
@@ -114,7 +115,6 @@ return (
     ) : (
       <CustomSelect
         backgroundColor="rgba(43 202 144)"
-        fontSize={20}
         textColor="white"
         onClick={() => {
           State.update({

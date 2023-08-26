@@ -2,26 +2,66 @@
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
 
-const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
+function initFetchListOfSampleTokens() {
+  return asyncFetch(
+    "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
+  )
+    .then((res) => JSON.parse(res.body))
+    .then((TOKEN_RECORDS) => {
+      const TOKENS = {};
 
-function $fetchTokenMetadata() {
-  console.log("Fetching token metadata...");
-  const metadata = TOKEN_ACCOUNTS.map((t) => {
-    console.log({ t });
-    const res = Near.view(t, "ft_metadata", {});
-    console.log({ res });
-  });
-  console.log("Tokens are ", metadata);
-  const tokens = metadata.map((t) => ({
-    value: t.symbol,
-    icon: t.icon,
-  }));
-  State.update({
-    TOKENS: tokens,
-  });
+      Object.keys(TOKEN_RECORDS).forEach((pair) => {
+        if (pair.slice(-4) === "USDT") {
+          const tokenSymbol = pair.slice(0, -5);
+          if (tokenSymbol) {
+            if (
+              ["ETH", "BTC", "ADA", "NEAR", "BSC", "DOT", "LINK"].includes(
+                tokenSymbol.toUpperCase()
+              )
+            )
+              TOKENS[tokenSymbol] = {
+                ...TOKEN_RECORDS[pair],
+                symbol: tokenSymbol,
+                decimals: 20,
+                address: tokenSymbol + ".zswap.testnet",
+                name: TOKEN_RECORDS[pair].assetName,
+                icon: TOKEN_RECORDS[pair].logo,
+                priceInUSD: -1,
+              };
+          }
+        }
+      });
+
+      return TOKENS;
+    });
 }
 
-$fetchTokenMetadata();
+const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
+
+function fetchTokenMetadata(tokenIndex, currentTOKENS) {
+  const tokenAddress = TOKEN_ACCOUNTS[tokenIndex];
+  Near.asyncView(tokenAddress, "ft_metadata", {}).then((tokenMetadata) => {
+    currentTOKENS[tokenMetadata.symbol] = {
+      ...tokenMetadata,
+      address: tokenAddress,
+    };
+
+    if (tokenIndex >= TOKEN_ACCOUNTS.length - 1) {
+      // last token
+      console.log("LEt's set ", currentTOKENS);
+      State.update({
+        TOKENS: currentTOKENS,
+      });
+    } else {
+      fetchTokenMetadata(tokenIndex + 1, currentTOKENS);
+    }
+  });
+}
+function $fetchTokenMetadata() {
+  initFetchListOfSampleTokens().then((sampleTokens) => {
+    fetchTokenMetadata(0, sampleTokens);
+  });
+}
 
 const INF = 1e308;
 
@@ -49,22 +89,26 @@ State.init({
 });
 
 function run() {
-  Near.call(
-    "znear.zswap.testnet",
-    "mint",
-    {
-      receiver_id: context.accountId,
-      amount: "100000",
-    },
-    300 * 1000000000000,
-    1000000000000000000000000
-  );
+  if (context.accountId) {
+    Near.call(
+      "znear.zswap.testnet",
+      "mint",
+      {
+        receiver_id: context.accountId,
+        amount: "100000",
+      },
+      300 * 1000000000000,
+      1000000000000000000000000
+    );
+  }
 }
 
 if (!state.fetchedTokensList) {
+  console.log("ACcountId = ", context.accountId);
   State.update({
     fetchedTokensList: true,
   });
+  $fetchTokenMetadata();
 }
 
 /** Static variables */
@@ -83,7 +127,8 @@ const Main = styled.div`
   padding: 40px;
   border-radius: 10px;
   //shadow-xl
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
   color: black;
 `;
@@ -571,7 +616,7 @@ const ChooseDepositAmount = (
         {state.firstSelectedToken.symbol && (
           <div class="token_name">
             <img
-              src={state.TOKENS[state.firstSelectedToken.symbol].logo}
+              src={state.TOKENS[state.firstSelectedToken.symbol].icon}
               width={24}
               height={24}
               alt={state.firstSelectedToken.symbol}
@@ -625,7 +670,7 @@ const ChooseDepositAmount = (
         {state.secondSelectedToken.symbol && (
           <div class="token_name">
             <img
-              src={state.TOKENS[state.secondSelectedToken.symbol].logo}
+              src={state.TOKENS[state.secondSelectedToken.symbol].icon}
               width={24}
               height={24}
               alt={state.secondSelectedToken.symbol}
@@ -1111,8 +1156,19 @@ const PoolDiaglog = (
                 selectedItem: state.firstSelectedToken.symbol
                   ? state.firstSelectedToken.symbol
                   : "",
-                list: state.TOKENS,
+                list: ["ZNEAR", "ZUSD"]
+                  .concat(
+                    Object.keys(state.TOKENS).filter(
+                      (x) => !["ZNEAR", "ZUSD"].includes(x.toUpperCase())
+                    )
+                  )
+                  .map((symbol) => ({
+                    value: symbol,
+                    icon: state.TOKENS[symbol].icon,
+                  })),
                 onChangeItem: onFirstTokenChange,
+                background: "rgb(245, 246, 252)",
+                fontSize: "16px",
               }}
               style={{
                 flex: 1,
@@ -1124,11 +1180,19 @@ const PoolDiaglog = (
                 selectedItem: state.secondSelectedToken.symbol
                   ? state.secondSelectedToken.symbol
                   : "",
-                list: Object.keys(state.TOKENS).map((symbol) => ({
-                  value: symbol,
-                  icon: state.TOKENS[symbol].logo,
-                })),
+                list: ["ZNEAR", "ZUSD"]
+                  .concat(
+                    Object.keys(state.TOKENS).filter(
+                      (x) => !["ZNEAR", "ZUSD"].includes(x.toUpperCase())
+                    )
+                  )
+                  .map((symbol) => ({
+                    value: symbol,
+                    icon: state.TOKENS[symbol].icon,
+                  })),
                 onChangeItem: onSecondTokenChange,
+                background: "rgb(245, 246, 252)",
+                fontSize: "16px",
               }}
               style={{
                 flex: 1,
