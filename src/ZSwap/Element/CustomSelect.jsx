@@ -79,7 +79,7 @@ const selectedItem = props.list.find(
 const otherItems = props.list.filter(
   (item) => item.value !== props.selectedItem
 );
-console.log(props, "changed");
+// console.log(props, "changed");
 
 return (
   <Container>

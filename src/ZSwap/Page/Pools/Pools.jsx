@@ -160,22 +160,34 @@ const getPriceOfTokenIfNeeded = (token) => {
       "https://api.unmarshal.com/v1/pricestore/" + token + "?auth_key=9v0mXZlpj27qoEmabpGJ8amEICsKmRWl6KgVnCOs"
     ).then((res) => {
       try{
-        state.TOKENS[token] = {
-          ...state.TOKENS[token],
-          priceInUSD: Number(res.body[0].price)
-        }
+        const price = Number(res.body[0].price);
+        State.update({
+          TOKENS: {
+            ...state.TOKENS,
+            [token]: {
+              ...state.TOKENS[token],
+              priceInUSD: price
+            }
+          }
+        });
 
-        console.log("Price of " + token + " is ", state.TOKENS[token].priceInUSD);
+        console.log("Price of " + token + " is ", price);
         
         // trigger re-rendering
         State.update({
-          firstSelectedToken: { ...state.firstSelectedToken, priceInUSD: token == state.firstSelectedToken.symbol ? res.body[0].price : state.firstSelectedToken.priceInUSD },
-          secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? res.body[0].price : state.secondSelectedToken.priceInUSD },
+          firstSelectedToken: { ...state.firstSelectedToken, priceInUSD: token == state.firstSelectedToken.symbol ? price : state.firstSelectedToken.priceInUSD },
+          secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? price : state.secondSelectedToken.priceInUSD },
         });
       }catch(err){
         console.log(err);
       }
     })
+  }else{
+    const price = state.TOKENS[token].priceInUSD;
+    State.update({
+      firstSelectedToken: { ...state.firstSelectedToken, priceInUSD: token == state.firstSelectedToken.symbol ? price : state.firstSelectedToken.priceInUSD },
+      secondSelectedToken: { ...state.secondSelectedToken, priceInUSD: token == state.secondSelectedToken.symbol ? price : state.secondSelectedToken.priceInUSD },
+    });
   }
 }
 
@@ -495,7 +507,7 @@ const ChooseDepositAmount = (
     </Label>
     <div class="amount_input_container">
       <div class="top_row">
-      <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="79" spellcheck="false" value={state.firstSelectedToken.amount}
+      <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="20" spellcheck="false" value={state.firstSelectedToken.amount}
           onChange={(e) => {
             State.update({
               firstSelectedToken: {
@@ -511,7 +523,7 @@ const ChooseDepositAmount = (
           </div>}
       </div>
       <div class="bottom_row">
-        <div class="usd_valuation">${state.firstSelectedToken ? state.firstSelectedToken.amount * state.firstSelectedToken.priceInUSD : "-"}</div>
+        <div class="usd_valuation">{state.firstSelectedToken.symbol ? <>${state.firstSelectedToken.amount * state.firstSelectedToken.priceInUSD}</> : "-"}</div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
           <div class="max_balance_btn">MAX</div>
@@ -521,7 +533,7 @@ const ChooseDepositAmount = (
 
     <div class="amount_input_container">
       <div class="top_row">
-        <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="79" spellcheck="false" value={state.secondSelectedToken.amount}
+        <input class="amount_input" inputmode="decimal" autocomplete="off" autocorrect="off" type="text" pattern="^[0-9]*[.,]?[0-9]*$" placeholder="0" minlength="1" maxlength="20" spellcheck="false" value={state.secondSelectedToken.amount}
           onChange={(e) => {
             State.update({
               secondSelectedToken: {
@@ -537,7 +549,7 @@ const ChooseDepositAmount = (
           </div>}
       </div>
       <div class="bottom_row">
-        <div class="usd_valuation">${state.secondSelectedToken ? state.secondSelectedToken.amount * state.secondSelectedToken.priceInUSD : "-"}</div>
+      <div class="usd_valuation">{state.secondSelectedToken.symbol ? <>${state.secondSelectedToken.amount * state.secondSelectedToken.priceInUSD}</> : "-"}</div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
           <div class="max_balance_btn">MAX</div>
@@ -681,7 +693,7 @@ const ChoosePriceRangeForm = (
             placeholder="0"
             min={0}
             minlength="1"
-            maxlength="79"
+            maxlength="20"
             spellcheck="false"
             value={state.priceRange.lowPrice}
             onChange={(e) => {
@@ -713,9 +725,9 @@ const ChoosePriceRangeForm = (
             placeholder="0"
             minlength="1"
             max={INF}
-            maxlength="79"
+            maxlength="20"
             spellcheck="false"
-            value={state.priceRange.highPrice == INF ? "oo" : state.priceRange.highPrice}
+            value={state.priceRange.highPrice == INF ? "oo" : JSON.stringify(state.priceRange.highPrice)}
             onChange={(e) => {
               State.update({
                 priceRange: {...state.priceRange, highPrice: Number(e.target.value)}
@@ -978,11 +990,10 @@ const PoolDiaglog = (
                   state.firstSelectedToken.symbol
                     ? state.firstSelectedToken.symbol
                     : "",
-                list: [],
-                // Object.keys(state.TOKENS).map((symbol) => ({
-                //   value: symbol,
-                //   icon: state.TOKENS[symbol].logo,
-                // })),
+                list: Object.keys(state.TOKENS).map((symbol) => ({
+                  value: symbol,
+                  icon: state.TOKENS[symbol].logo,
+                })),
                 onChangeItem: onFirstTokenChange,
               }}
               style={{
@@ -996,11 +1007,10 @@ const PoolDiaglog = (
                   state.secondSelectedToken.symbol
                     ? state.secondSelectedToken.symbol
                     : "",
-                list: [],
-                // Object.keys(state.TOKENS).map((symbol) => ({
-                //   value: symbol,
-                //   icon: state.TOKENS[symbol].logo,
-                // })),
+                list: Object.keys(state.TOKENS).map((symbol) => ({
+                  value: symbol,
+                  icon: state.TOKENS[symbol].logo,
+                })),
                 onChangeItem: onSecondTokenChange,
               }}
               style={{
