@@ -1,7 +1,7 @@
 /** Constants */
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
-
+const BIG_ROUND_UP = 3;
 const fee_descriptions = [
   // [0.01, "very stable pairs", 32],
   [0.05, "stable pairs", 0],
@@ -37,7 +37,7 @@ State.init({
   fetchedTokensList: false,
   inputError: "",
   show_fee_choices: false,
-  fee_chosen: 2,
+  fee_chosen: 1,
 });
 
 function initFetchListOfSampleTokens() {
@@ -84,23 +84,39 @@ const poolMetadata =
       })
     : undefined;
 
+const provideLiquidityOnExistingPool =
+  poolMetadata ||
+  !state.firstSelectedToken.symbol ||
+  !state.secondSelectedToken.symbol;
+
 function encodePriceSqrt(reserve1, reserve0) {
   return Math.flow(Math.sqrt(reserve1 / reserve0) * Math.pow(2, 96));
 }
-function decodePriceSqrt(sqrtPrice) {
-  return sqrtPrice / Math.pow(2, 96);
-}
+// function decodePriceSqrt(sqrtPriceX96Big) {
+//   const price = sqrtPriceX96Big.div(Big(2).pow(96));
+//   return price;
+// }
 
-const currentPrice = poolMetadata
-  ? decodePriceSqrt(
-      Number(
-        Near.view(poolMetadata.pool_id, "get_slot_0", {})?.sqrt_price_x96 ?? 0
-      )
+const currentSqrtX96PriceBig = poolMetadata
+  ? Big(
+      Near.view(poolMetadata.pool_id, "get_slot_0", {})?.sqrt_price_x96 ?? "0"
     )
-  : undefined;
+  : Big(0);
 
-// console.log("Pool metadata: ", poolMetadata);
-// console.log(`Current price (token0/token1): ${currentPrice}`);
+const currentPriceBig =
+  poolMetadata && !currentSqrtX96PriceBig.eq(Big(0))
+    ? poolMetadata.token_0.startsWith(
+        state.firstSelectedToken.symbol.toLowerCase()
+      )
+      ? currentSqrtX96PriceBig.div(Big(2).pow(96)).pow(2)
+      : Big(1).div(currentSqrtX96PriceBig.div(Big(2).pow(96)).pow(2))
+    : Big(0);
+
+console.log("Pool metadata: ", poolMetadata, currentSqrtX96PriceBig.toFixed());
+// console.log(
+//   `Current price (token0/token1): ${currentPriceBig.toFixed()}`,
+//   currentPriceBig
+// );
 
 function fetchTokenMetadata(tokenIndex, currentTOKENS) {
   const tokenAddress = TOKEN_ACCOUNTS[tokenIndex];
@@ -289,7 +305,11 @@ const getTokenBalanceOfUser = (token) => {
     account_id: accountId,
   })
     .catch((err) => 0)
-    .then((bl) => Number(bl))
+    .then((bl) =>
+      Big(bl)
+        .div(Big(Math.pow(10, 24)))
+        .toNumber()
+    )
     .then((bl) => (Number.isNaN(bl) ? 0 : bl));
 };
 
@@ -614,7 +634,285 @@ const ChooseDepositAmountWrapper = styled.div`
     padding: 4px 6px;
     pointer-events: initial;
   }
+  .deposit_token_btn {
+    width: 100%;
+    position: relative;
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    align-items: center;
+    background-color: rgb(43, 204, 145);
+    color: white;
+    border-radius: 10px;
+    font-weight: bold;
+    overflow: hidden;
+    padding: 4px 0px;
+    margin-top: 12px;
+    cursor: pointer;
+    border: none;
+  }
+  .deposit_token_btn.disabled {
+    background: #8bf1cc;
+  }
 `;
+
+const getLog = (num, base) => {
+  return Math.log(num) / Math.log(base);
+};
+const getLowerTick = (lowPrice) => {
+  // poolMetadata must be non-empty
+  const price = Big(lowPrice);
+  if (price.lte(0)) return Big(-1);
+
+  const tick_spacing = Big(poolMetadata.tick_spacing);
+
+  // console.log("now ", lowPrice, price, tick_spacing);
+  let lower_tick = Big(Math.floor(getLog(price.toNumber(), 1.0001)));
+
+  // console.log(
+  //   "sure ",
+  //   lowPrice,
+  //   " ",
+  //   price.toFixed(),
+  //   " ",
+  //   tick_spacing.toFixed(),
+  //   " ",
+  //   lower_tick.toFixed(),
+  //   " //// ",
+  //   lower_tick.toNumber()
+  // );
+  let i = 0;
+  while (
+    i < 10 &&
+    lower_tick.lt(Big(MAX_TICK)) &&
+    (Big(Math.pow(1.0001, lower_tick.toNumber())).lt(price) ||
+      !lower_tick.mod(tick_spacing).eq(Big(0)))
+  ) {
+    // console.log("wrong ", lower_tick.toFixed(), " / ");
+
+    lower_tick = lower_tick
+      .plus(tick_spacing)
+      .div(tick_spacing)
+      .round(undefined, BIG_ROUND_DOWN)
+      .mul(tick_spacing);
+
+    i += 1;
+  }
+  if (
+    Big(Math.pow(1.0001, lower_tick.toNumber())).gte(price) &&
+    lower_tick.mod(tick_spacing).eq(Big(0))
+  ) {
+    return lower_tick;
+  } else {
+    return Big(-1);
+  }
+};
+
+const getUpperTick = (highPrice) => {
+  // poolMetadata must be non-empty
+  const price = Big(highPrice);
+  const tick_spacing = Big(poolMetadata.tick_spacing);
+  if (price.lte(0)) return Big(-1);
+
+  let upper_tick = Big(Math.ceil(getLog(price.toNumber(), 1.0001)));
+
+  // console.log(
+  //   "upper => ",
+  //   upper_tick.toFixed(),
+  //   " / ",
+  //   price.toFixed(),
+  //   " / ",
+  //   tick_spacing.toFixed()
+  // );
+  while (
+    upper_tick.gt(MIN_TICK) &&
+    (Big(Math.pow(1.0001, upper_tick.toNumber())).gt(price) ||
+      !upper_tick.mod(tick_spacing).eq(Big(0)))
+  ) {
+    // console.log("wrong ", upper_tick.toFixed(), " => ");
+    upper_tick = upper_tick
+      .minus(tick_spacing)
+      .div(tick_spacing)
+      .round(undefined, BIG_ROUND_UP)
+      .mul(tick_spacing);
+  }
+  if (
+    Big(Math.pow(1.0001, upper_tick.toNumber())).lte(price) &&
+    upper_tick.mod(tick_spacing).eq(0)
+  ) {
+    return upper_tick;
+  } else {
+    return Big(-1);
+  }
+};
+
+const updateAmount1BasedOnAmount0 = () => {
+  const amount = state.firstSelectedToken.amount;
+
+  if (!amount || !Number(amount)) {
+    State.update({
+      secondSelectedToken: {
+        ...state.secondSelectedToken,
+        amount: "0",
+      },
+    });
+    return;
+  }
+  const isReversedDirection =
+    poolMetadata &&
+    !poolMetadata.token_0.startsWith(
+      state.firstSelectedToken.symbol.toLowerCase()
+    );
+  const lower_tick = isReversedDirection
+    ? getLowerTick(
+        Big(1).div(Big(state.priceRange.highPrice)).toString()
+      ).toNumber()
+    : getLowerTick(state.priceRange.lowPrice).toNumber();
+  const upper_tick = isReversedDirection
+    ? getUpperTick(
+        Big(1).div(Big(state.priceRange.lowPrice)).toString()
+      ).toNumber()
+    : getUpperTick(state.priceRange.highPrice).toNumber();
+
+  if (poolMetadata)
+    Near.asyncView(
+      "manager.zswap.testnet",
+      isReversedDirection
+        ? "calculate_amount_0_with_amount_1"
+        : "calculate_amount_1_with_amount_0",
+      {
+        [isReversedDirection ? "amount_1" : "amount_0"]: Big(amount)
+          .mul(Big(Math.pow(10, 24)))
+          .round(undefined, BIG_ROUND_DOWN)
+          .toFixed(),
+        sqrt_price_x96: currentSqrtX96PriceBig.toFixed(),
+        lower_tick,
+        upper_tick,
+      }
+    ).then((amount1Str) => {
+      const amount1 = Big(amount1Str)
+        .div(Big(Math.pow(10, 24)))
+        .round(10, BIG_ROUND_UP);
+      State.update({
+        secondSelectedToken: {
+          ...state.secondSelectedToken,
+          amount: amount1.toString(),
+        },
+      });
+    });
+};
+
+const updateAmount0BasedOnAmount1 = () => {
+  const amount = state.secondSelectedToken.amount;
+
+  if (!amount || !Number(amount)) {
+    State.update({
+      firstSelectedToken: {
+        ...state.firstSelectedToken,
+        amount: "0",
+      },
+    });
+    return;
+  }
+
+  const isReversedDirection =
+    poolMetadata &&
+    !poolMetadata.token_0.startsWith(
+      state.firstSelectedToken.symbol.toLowerCase()
+    );
+  const lower_tick = isReversedDirection
+    ? getLowerTick(
+        Big(1).div(Big(state.priceRange.highPrice)).toString()
+      ).toNumber()
+    : getLowerTick(state.priceRange.lowPrice).toNumber();
+  const upper_tick = isReversedDirection
+    ? getUpperTick(
+        Big(1).div(Big(state.priceRange.lowPrice)).toString()
+      ).toNumber()
+    : getUpperTick(state.priceRange.highPrice).toNumber();
+
+  if (poolMetadata)
+    Near.asyncView(
+      "manager.zswap.testnet",
+      isReversedDirection
+        ? "calculate_amount_1_with_amount_0"
+        : "calculate_amount_0_with_amount_1",
+      {
+        [isReversedDirection ? "amount_0" : "amount_1"]: Big(amount)
+          .mul(Big(Math.pow(10, 24)))
+          .round(undefined, BIG_ROUND_DOWN)
+          .toFixed(),
+        sqrt_price_x96: currentSqrtX96PriceBig.toFixed(),
+        lower_tick,
+        upper_tick,
+      }
+    ).then((amount0Str) => {
+      const amount0 = Big(amount0Str)
+        .div(Big(Math.pow(10, 24)))
+        .round(10, BIG_ROUND_UP);
+      console.log("amount0 = ", amount0);
+      State.update({
+        firstSelectedToken: {
+          ...state.firstSelectedToken,
+          amount: amount0.toString(),
+        },
+      });
+    });
+};
+
+const depositFirstToken = () => {
+  Near.call(
+    state.TOKENS[state.firstSelectedToken.symbol].address,
+    "ft_transfer_call",
+    {
+      receiver_id: poolMetadata.pool_id,
+      amount: Big(state.firstSelectedToken.amount)
+        .mul(Big(Math.pow(10, 24)))
+        .toFixed(),
+      msg: "",
+    },
+    300000000000000,
+    1
+  );
+};
+const depositSecondToken = () => {
+  Near.call(
+    state.TOKENS[state.secondSelectedToken.symbol].address,
+    "ft_transfer_call",
+    {
+      receiver_id: poolMetadata.pool_id,
+      amount: Big(state.secondSelectedToken.amount)
+        .mul(Big(Math.pow(10, 24)))
+        .toFixed(),
+      msg: "",
+    },
+    300000000000000,
+    1
+  );
+};
+
+const notEnoughAmount0 =
+  state.firstSelectedToken.symbol &&
+  Number(state.firstSelectedToken.amount) >
+    Number(state.firstSelectedToken.balance);
+const notEnoughAmount1 =
+  state.secondSelectedToken.symbol &&
+  Number(state.secondSelectedToken.amount) >
+    Number(state.secondSelectedToken.balance);
+const canProvideLiquidity =
+  (Number(state.firstSelectedToken.amount) > 0 ||
+    Number(state.secondSelectedToken.amount) > 0) &&
+  !notEnoughAmount0 &&
+  !notEnoughAmount1;
+
+const canDeposit =
+  (Number(state.firstSelectedToken.amount) ||
+    Number(state.secondSelectedToken.amount)) &&
+  !notEnoughAmount0 &&
+  !notEnoughAmount1 &&
+  state.priceRange.lowPrice &&
+  state.priceRange.highPrice;
 
 const ChooseDepositAmount = (
   <ChooseDepositAmountWrapper>
@@ -644,6 +942,8 @@ const ChooseDepositAmount = (
                   amount,
                 },
               });
+
+              updateAmount1BasedOnAmount0();
             }
           }}
         />
@@ -675,19 +975,27 @@ const ChooseDepositAmount = (
           <div class="balance">Balance: {state.firstSelectedToken.balance}</div>
           <div
             class="max_balance_btn"
-            onClick={() =>
+            onClick={() => {
               State.update({
                 firstSelectedToken: {
                   ...state.firstSelectedToken,
                   amount: state.firstSelectedToken.balance.toString(),
                 },
-              })
-            }
+              });
+              updateAmount1BasedOnAmount0();
+            }}
           >
             MAX
           </div>
         </div>
       </div>
+      {canDeposit ? (
+        <button class="deposit_token_btn" onClick={depositFirstToken}>
+          Deposit
+        </button>
+      ) : (
+        <button class="deposit_token_btn disabled">Deposit</button>
+      )}
     </div>
 
     <div class="amount_input_container">
@@ -713,6 +1021,7 @@ const ChooseDepositAmount = (
                   amount,
                 },
               });
+              updateAmount0BasedOnAmount1();
             }
           }}
         />
@@ -746,19 +1055,27 @@ const ChooseDepositAmount = (
           </div>
           <div
             class="max_balance_btn"
-            onClick={() =>
+            onClick={() => {
               State.update({
                 secondSelectedToken: {
                   ...state.secondSelectedToken,
                   amount: state.secondSelectedToken.balance.toString(),
                 },
-              })
-            }
+              });
+              updateAmount0BasedOnAmount1();
+            }}
           >
             MAX
           </div>
         </div>
       </div>
+      {canDeposit ? (
+        <button class="deposit_token_btn" onClick={depositSecondToken}>
+          Deposit
+        </button>
+      ) : (
+        <button class="deposit_token_btn disabled">Deposit</button>
+      )}
     </div>
   </ChooseDepositAmountWrapper>
 );
@@ -896,9 +1213,10 @@ const ChoosePriceRangeForm = (
     </div>
     {state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && (
       <div class="current_price">
-        {poolMetadata && currentPrice ? (
+        {poolMetadata ? (
           <>
-            Current price: <span class="price">{currentPrice.toString()}</span>
+            Current price:{" "}
+            <span class="price">{currentPriceBig.round(10).toString()}</span>
           </>
         ) : (
           "Pool not created"
@@ -922,6 +1240,8 @@ const ChoosePriceRangeForm = (
                       : state.price.lowPrice,
                 },
               });
+
+              updateAmount1BasedOnAmount0();
             }}
           >
             +
@@ -950,6 +1270,8 @@ const ChoosePriceRangeForm = (
                     lowPrice: amount,
                   },
                 });
+
+                updateAmount1BasedOnAmount0();
               }
             }}
           />
@@ -975,6 +1297,7 @@ const ChoosePriceRangeForm = (
                       : state.priceRange.lowPrice,
                 },
               });
+              updateAmount1BasedOnAmount0();
             }}
           >
             -
@@ -998,6 +1321,7 @@ const ChoosePriceRangeForm = (
                       : state.priceRange.highPrice,
                 },
               });
+              updateAmount1BasedOnAmount0();
             }}
           >
             +
@@ -1026,6 +1350,7 @@ const ChoosePriceRangeForm = (
                     highPrice: amount,
                   },
                 });
+                updateAmount1BasedOnAmount0();
               }
             }}
           />
@@ -1051,6 +1376,7 @@ const ChoosePriceRangeForm = (
                       : state.priceRange.highPrice,
                 },
               });
+              updateAmount1BasedOnAmount0();
             }}
           >
             -
@@ -1253,18 +1579,6 @@ const ErrorBoxWrapper = styled.div`
   }
 `;
 
-const notEnoughAmount0 =
-  state.firstSelectedToken.symbol &&
-  Number(state.firstSelectedToken.amount) > state.firstSelectedToken.balance;
-const notEnoughAmount1 =
-  state.secondSelectedToken.symbol &&
-  Number(state.secondSelectedToken.amount) > state.secondSelectedToken.balance;
-const canProvideLiquidity =
-  (Number(state.firstSelectedToken.amount) > 0 ||
-    Number(state.secondSelectedToken.amount) > 0) &&
-  !notEnoughAmount0 &&
-  !notEnoughAmount1;
-
 const ErrorBox = (
   <ErrorBoxWrapper>
     <div class="error">
@@ -1279,10 +1593,60 @@ const ErrorBox = (
   </ErrorBoxWrapper>
 );
 
-const provideLiquidityOnExistingPool =
-  poolMetadata ||
-  !state.firstSelectedToken.symbol ||
-  !state.secondSelectedToken.symbol;
+const createPool = () => {};
+const provideLiquidity = () => {
+  const isReversedDirection =
+    poolMetadata &&
+    !poolMetadata.token_0.startsWith(
+      state.firstSelectedToken.symbol.toLowerCase()
+    );
+  const lower_tick = isReversedDirection
+    ? getLowerTick(
+        Big(1).div(Big(state.priceRange.highPrice)).toString()
+      ).toNumber()
+    : getLowerTick(state.priceRange.lowPrice).toNumber();
+  const upper_tick = isReversedDirection
+    ? getUpperTick(
+        Big(1).div(Big(state.priceRange.lowPrice)).toString()
+      ).toNumber()
+    : getUpperTick(state.priceRange.highPrice).toNumber();
+
+  Near.call(
+    "manager.zswap.testnet",
+    "mint",
+    {
+      params: {
+        token_0: isReversedDirection
+          ? state.TOKENS[state.secondSelectedToken.symbol].address
+          : state.TOKENS[state.firstSelectedToken.symbol].address,
+        token_1: isReversedDirection
+          ? state.TOKENS[state.firstSelectedToken.symbol].address
+          : state.TOKENS[state.secondSelectedToken.symbol].address,
+        fee: fee_descriptions[state.fee_chosen][0] * Math.pow(10, 4),
+        lower_tick,
+        upper_tick,
+        amount_0_desired: Big(
+          isReversedDirection
+            ? state.secondSelectedToken.amount
+            : state.firstSelectedToken.amount
+        )
+          .mul(Big(Math.pow(10, 24)))
+          .toFixed(),
+        amount_1_desired: Big(
+          isReversedDirection
+            ? state.firstSelectedToken.amount
+            : state.secondSelectedToken.amount
+        )
+          .mul(Big(Math.pow(10, 24)))
+          .toFixed(),
+        amount_0_min: "0",
+        amount_1_min: "0",
+      },
+    },
+    300000000000000,
+    Math.pow(10, 23)
+  );
+};
 
 const ProvideLiquidityButton = (
   <Widget
@@ -1290,7 +1654,9 @@ const ProvideLiquidityButton = (
     props={{
       onClick: () => {
         if (provideLiquidityOnExistingPool) {
+          provideLiquidity();
         } else {
+          createPool();
         }
       },
       text: provideLiquidityOnExistingPool
@@ -1410,7 +1776,7 @@ const PoolDiaglog = (
           srcDoc={srcDocChart}
           message={{
             exp: state.text || "",
-            currentPrice:
+            currentPriceBig:
               state.firstSelectedToken.priceInUSD /
               (state.secondSelectedToken.priceInUSD ?? 0),
           }}
