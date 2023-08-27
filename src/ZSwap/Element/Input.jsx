@@ -71,58 +71,7 @@ const Input = styled.input`
   padding: 16px 16px;
   background: rgba(0, 0, 0, 0.01);
   border-radius: 8px;
-  &:hover {
-    background: rgba(0, 0, 0, 0.04);
-  }
 `;
-
-// return (
-//   <Wrapper>
-//     <NEARInputContainer>
-//       <Label>{props.label}</Label>
-//       <Container>
-//         <input
-//           placeholder={0}
-//           value={props.value}
-//           onChange={props.onChange}
-//           textColor={props.inputError && "#ec6868"}
-//         />
-//         <Container width="27%">
-//           <Widget
-//             src={`${props?.config.ownerId}/widget/ZSwap.Element.CustomSelect`}
-//             props={{
-//               selectedItem:
-//                 props.selectedToken !== "UNKNOWN" ? props.selectedToken : "",
-//               list: props.listToken.map((t) => {
-//                 return {
-//                   value: t.symbol,
-//                   icon: t.icon,
-//                 };
-//               }),
-//               bottom: props.selectPosition.bottom,
-//               onChangeItem: props.onChangeToken,
-//             }}
-//           />
-//         </Container>
-//       </Container>
-//     </NEARInputContainer>
-//     {props.showBalance && (
-//       <BalanceContainer>
-//         <div
-//           style={{
-//             color: "black",
-//           }}
-//         >
-//           Balance: <span>{props.balance}</span>
-//         </div>
-//         <div className="error">{props.inputError}</div>
-//         <div>
-//           <MaxTexture onClick={props.onClickMax}>Max</MaxTexture>
-//         </div>
-//       </BalanceContainer>
-//     )}
-//   </Wrapper>
-// );
 
 return (
   <Wrapper>
@@ -132,8 +81,9 @@ return (
         <Input
           placeholder={0}
           value={props.value}
-          onChange={props.onChange}
+          onChange={props?.onChange}
           textColor={props.inputError && "#ec6868"}
+          disabled={!props?.onChange}
         />
 
         <div
