@@ -21,6 +21,7 @@ const NEARInputContainer = styled.div`
 const BalanceContainer = styled.div`
   color: #2bcc91;
   font-size: 16px;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -41,34 +42,87 @@ const MaxTexture = styled.div`
 `;
 
 const Label = styled.label`
-  font-size: ${(props) => props.fontSize || "20px"};
+  font-size: ${(props) => props.fontSize || "22px"};
   font-weight: ${(props) => props.fontWeight || "600"};
   color: ${(props) => props.color || "#6b7280"};
+  margin-bottom: 8px;
 `;
 
 const Container = styled.div`
   display: flex;
   gap: 16px;
   position: relative;
-  width: ${(props) => props.width || "100%"};
+  width: 100%;
 `;
 
 const Input = styled.input`
-  flex: 1;
-  padding: 8px 16px;
-  font-size: 24px;
-  font-weight: bold;
+  width: 100%;
+  transition: opacity 0.2s ease-in-out 0s;
   text-align: left;
-  background: rgba(0, 0, 0, 0.05);
-  color: ${(props) => (props.textColor ? "#ec6868" : "black")};
-  box-shadow: none;
-  border: none;
+  color: rgb(13, 17, 28);
+  font-weight: 400;
   outline: none;
-  --webkit-appearance: none;
-  --moz-appearance: textfield;
+  border: medium;
+  flex: 1 1 auto;
+  font-size: 28px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  appearance: textfield;
+  padding: 16px 16px;
+  background: rgba(0, 0, 0, 0.01);
+  border-radius: 8px;
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
 `;
 
-const { config } = props;
+// return (
+//   <Wrapper>
+//     <NEARInputContainer>
+//       <Label>{props.label}</Label>
+//       <Container>
+//         <input
+//           placeholder={0}
+//           value={props.value}
+//           onChange={props.onChange}
+//           textColor={props.inputError && "#ec6868"}
+//         />
+//         <Container width="27%">
+//           <Widget
+//             src={`${props?.config.ownerId}/widget/ZSwap.Element.CustomSelect`}
+//             props={{
+//               selectedItem:
+//                 props.selectedToken !== "UNKNOWN" ? props.selectedToken : "",
+//               list: props.listToken.map((t) => {
+//                 return {
+//                   value: t.symbol,
+//                   icon: t.icon,
+//                 };
+//               }),
+//               bottom: props.selectPosition.bottom,
+//               onChangeItem: props.onChangeToken,
+//             }}
+//           />
+//         </Container>
+//       </Container>
+//     </NEARInputContainer>
+//     {props.showBalance && (
+//       <BalanceContainer>
+//         <div
+//           style={{
+//             color: "black",
+//           }}
+//         >
+//           Balance: <span>{props.balance}</span>
+//         </div>
+//         <div className="error">{props.inputError}</div>
+//         <div>
+//           <MaxTexture onClick={props.onClickMax}>Max</MaxTexture>
+//         </div>
+//       </BalanceContainer>
+//     )}
+//   </Wrapper>
+// );
 
 return (
   <Wrapper>
@@ -81,37 +135,60 @@ return (
           onChange={props.onChange}
           textColor={props.inputError && "#ec6868"}
         />
-        <Container width="27%">
+
+        <div
+          style={{
+            width: "27%",
+            minHeight: "100%",
+            display: "flex",
+          }}
+        >
           <Widget
-            src={`${config.ownerId}/widget/ZSwap.Element.CustomSelect`}
+            src={`${props?.config.ownerId}/widget/ZSwap.Element.CustomSelect`}
             props={{
               selectedItem:
                 props.selectedToken !== "UNKNOWN" ? props.selectedToken : "",
-              list: props.listToken.map((t) => ({
-                value: t.symbol,
-                icon: t.icon,
-              })),
+              list: props.listToken.map((t) => {
+                return {
+                  value: t.symbol,
+                  icon: t.icon,
+                };
+              }),
               bottom: props.selectPosition.bottom,
               onChangeItem: props.onChangeToken,
             }}
           />
-        </Container>
+        </div>
       </Container>
     </NEARInputContainer>
-    {props.showBalance && (
-      <BalanceContainer>
-        <div
-          style={{
-            color: "black",
-          }}
-        >
-          Balance: <span>{props.balance}</span>
-        </div>
-        <div className="error">{props.inputError}</div>
-        <div>
-          <MaxTexture onClick={props.onClickMax}>Max</MaxTexture>
-        </div>
-      </BalanceContainer>
-    )}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "between",
+      }}
+    >
+      <div
+        style={{
+          color: "#ec6868",
+        }}
+      >
+        {props.inputError}
+      </div>
+      {props.showBalance && (
+        <BalanceContainer>
+          <div
+            style={{
+              color: "black",
+            }}
+          >
+            Balance: <span>{props.balance}</span>
+          </div>
+
+          <div>
+            <MaxTexture onClick={props.onClickMax}>Max</MaxTexture>
+          </div>
+        </BalanceContainer>
+      )}
+    </div>
   </Wrapper>
 );

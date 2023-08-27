@@ -36,8 +36,7 @@ const CustomSelect = styled.div`
   font-size: ${props.fontSize ?? "auto"};
   color: ${props.textColor ?? "black"};
   cursor: pointer;
-  ${props.selectedItem === "" &&
-  `&:after {
+  &:after {
     content: "";
     position: absolute;
     top: 50%;
@@ -48,7 +47,7 @@ const CustomSelect = styled.div`
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 6px solid ${props.textColor ?? "gray"};
-  }`}
+  }
 `;
 
 const LogoWithText = styled.div`
