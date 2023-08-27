@@ -2,6 +2,41 @@
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
 
+const fee_descriptions = [
+  [0.01, "very stable pairs", 32],
+  [0.05, "stable pairs", 0],
+  [0.3, "most pairs", 0],
+  [0.1, "exotic pairs", 0],
+];
+// Define components
+
+const INF = 1e308;
+
+/** State */
+State.init({
+  firstSelectedToken: {
+    symbol: "",
+    amount: "",
+    priceInUSD: 0,
+    balance: 0,
+  },
+  secondSelectedToken: {
+    symbol: "",
+    amount: "",
+    priceInUSD: 0,
+    balance: 0,
+  },
+  priceRange: {
+    lowPrice: "",
+    highPrice: "",
+  },
+  TOKENS: {},
+  fetchedTokensList: false,
+  inputError: "",
+  show_fee_choices: false,
+  fee_chosen: 2,
+});
+
 function initFetchListOfSampleTokens() {
   return asyncFetch(
     "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
@@ -37,6 +72,32 @@ function initFetchListOfSampleTokens() {
 }
 
 const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
+const poolMetadata =
+  state.firstSelectedToken.symbol && state.secondSelectedToken.symbol
+    ? Near.view("factory2.zswap.testnet", "get_pool", {
+        token_0: state.TOKENS[state.firstSelectedToken.symbol]?.address ?? "",
+        token_1: state.TOKENS[state.secondSelectedToken.symbol]?.address ?? "",
+        fee: fee_descriptions[state.fee_chosen][0] * Math.pow(10, 4),
+      })
+    : undefined;
+
+function encodePriceSqrt(reserve1, reserve0) {
+  return Math.flow(Math.sqrt(reserve1 / reserve0) * Math.pow(2, 96));
+}
+function decodePriceSqrt(sqrtPrice) {
+  return sqrtPrice / Math.pow(2, 96);
+}
+
+const currentPrice = poolMetadata
+  ? decodePriceSqrt(
+      Number(
+        Near.view(poolMetadata.pool_id, "get_slot_0", {})?.sqrt_price_x96 ?? 0
+      )
+    )
+  : undefined;
+
+// console.log("Pool metadata: ", poolMetadata);
+// console.log(`Current price (token0/token1): ${currentPrice}`);
 
 function fetchTokenMetadata(tokenIndex, currentTOKENS) {
   const tokenAddress = TOKEN_ACCOUNTS[tokenIndex];
@@ -44,11 +105,11 @@ function fetchTokenMetadata(tokenIndex, currentTOKENS) {
     currentTOKENS[tokenMetadata.symbol] = {
       ...tokenMetadata,
       address: tokenAddress,
+      priceInUSD: 0,
     };
 
     if (tokenIndex >= TOKEN_ACCOUNTS.length - 1) {
       // last token
-      console.log("LEt's set ", currentTOKENS);
       State.update({
         TOKENS: currentTOKENS,
       });
@@ -62,31 +123,6 @@ function $fetchTokenMetadata() {
     fetchTokenMetadata(0, sampleTokens);
   });
 }
-
-const INF = 1e308;
-
-/** State */
-State.init({
-  firstSelectedToken: {
-    symbol: "",
-    amount: 0,
-    priceInUSD: 0,
-  },
-  secondSelectedToken: {
-    symbol: "",
-    amount: 0,
-    priceInUSD: 0,
-  },
-  priceRange: {
-    lowPrice: 0,
-    highPrice: INF,
-  },
-  TOKENS: {},
-  fetchedTokensList: false,
-  inputError: "",
-  show_fee_choices: false,
-  fee_chosen: 0,
-});
 
 function run() {
   if (context.accountId) {
@@ -149,7 +185,7 @@ const DialogHeader = styled.div`
 const DialogBody = styled.div`
   width: 100%;
   display: flex;
-  padding: 20px;
+  padding: 20px 20px 0 20px;
   & > div {
     flex: 1;
     padding: 8px;
@@ -197,6 +233,7 @@ const connectWallet =
   });
 
 const getPriceOfTokenIfNeeded = (token) => {
+  if (!token) return;
   if (state.TOKENS[token].priceInUSD < 0) {
     console.log("Start fetching price for " + token + "...");
     asyncFetch(
@@ -236,7 +273,7 @@ const getPriceOfTokenIfNeeded = (token) => {
           },
         });
       } catch (err) {
-        console.log(err);
+        console.log("Fail here ", err);
       }
     });
   } else {
@@ -260,66 +297,98 @@ const getPriceOfTokenIfNeeded = (token) => {
   }
 };
 
-const onFirstTokenChange = (token) => {
-  if (token === state.secondSelectedToken.symbol) {
+const getTokenBalanceOfUser = (token) => {
+  const accountId = context.accountId;
+  return Near.asyncView(state.TOKENS[token].address, "ft_balance_of", {
+    account_id: accountId,
+  })
+    .catch((err) => 0)
+    .then((bl) => Number(bl))
+    .then((bl) => (Number.isNaN(bl) ? 0 : bl));
+};
+
+const updateSelectedData = () => {
+  getPriceOfTokenIfNeeded(state.firstSelectedToken.symbol);
+  getPriceOfTokenIfNeeded(state.secondSelectedToken.symbol);
+  getTokenBalanceOfUser(state.firstSelectedToken.symbol).then((balance) => {
+    State.update({
+      firstSelectedToken: {
+        ...state.firstSelectedToken,
+        balance,
+      },
+    });
+  });
+  getTokenBalanceOfUser(state.secondSelectedToken.symbol).then((balance) => {
     State.update({
       secondSelectedToken: {
         ...state.secondSelectedToken,
-        symbol: "",
-        amount: 0,
+        balance,
       },
     });
-  }
+  });
+};
+const onFirstTokenChange = (token) => {
+  let prevFirst = state.firstSelectedToken.symbol;
 
   State.update({
     firstSelectedToken: {
       ...state.firstSelectedToken,
       symbol: token,
       amount: 0,
+      balance: 0,
     },
+    ...(token === state.secondSelectedToken.symbol && {
+      secondSelectedToken: {
+        ...state.secondSelectedToken,
+        symbol: prevFirst,
+        amount: 0,
+        balance: 0,
+      },
+    }),
   });
 
-  getPriceOfTokenIfNeeded(token);
+  updateSelectedData();
 };
 
 const onSecondTokenChange = (token) => {
-  if (token === state.firstSelectedToken.symbol) {
-    State.update({
+  let prevSecond = state.secondSelectedToken.symbol;
+
+  console.log("got ", token, prevSecond, prev.firstSelectedToken, " => ", {
+    secondSelectedToken: {
+      ...state.secondSelectedToken,
+      symbol: token,
+      amount: 0,
+      balance: 0,
+    },
+    ...(token === state.firstSelectedToken.symbol && {
       firstSelectedToken: {
         ...state.firstSelectedToken,
-        symbol: "",
+        symbol: prevSecond,
         amount: 0,
+        balance: 0,
       },
-    });
-  }
+    }),
+  });
 
   State.update({
     secondSelectedToken: {
       ...state.secondSelectedToken,
       symbol: token,
       amount: 0,
+      balance: 0,
     },
+    ...(token === state.firstSelectedToken.symbol && {
+      firstSelectedToken: {
+        ...state.firstSelectedToken,
+        symbol: prevSecond,
+        amount: 0,
+        balance: 0,
+      },
+    }),
   });
 
-  getPriceOfTokenIfNeeded(token);
+  updateSelectedData();
 };
-/////////////////////////////////////////////////////////////////////////////////
-// const contract = "hello.near-examples.near";
-// const contract = "hello"
-// const greeting = Near.view(contract, "get_greeting", {});
-
-// // Use and manipulate state
-// State.init({ greeting });
-
-// const onInputChange = ({ target }) => {
-//   State.update({ greeting: target.value });
-// };
-
-// const onBtnClick = () => {
-//   Near.call(contract, "set_greeting", {
-//     greeting: state.greeting,
-//   });
-// };
 
 /////////////////////////////////////////////////////////////////////////////////
 const ChooseFeeWrapper = styled.div`
@@ -339,10 +408,10 @@ const ChooseFeeWrapper = styled.div`
   }
 
   .fee_choice_chosen {
-    border: 1px solid rgb(0 0 0 /0.05);
+    border: 1px solid #2dcc91;
   }
   .fee_choice:hover {
-    border: 1px solid rgb(0 0 0 /0.05);
+    border: 1px solid #2dcc91;
   }
 
   .fee_choice .top {
@@ -352,7 +421,7 @@ const ChooseFeeWrapper = styled.div`
   }
 
   .fee_choice .top .tick_circle {
-    background: rgb(0 0 0 /0.05);
+    background: #2dcc91;
     width: 17px;
     height: 17px;
     display: flex;
@@ -418,14 +487,6 @@ const ChooseFeeWrapper = styled.div`
   }
 `;
 
-const fee_descriptions = [
-  [0.01, "very stable pairs", 32],
-  [0.05, "stable pairs", 0],
-  [0.3, "most pairs", 0],
-  [0.1, "exotic pairs", 0],
-];
-// Define components
-
 const ChooseFeeForm = (
   <ChooseFeeWrapper>
     <div class="fee_input_container">
@@ -489,10 +550,10 @@ const ChooseFeeForm = (
 
 const ChooseDepositAmountWrapper = styled.div`
   .amount_input_container {
-    max-width: 500px;
     border-radius: 20px;
     border: 1px solid rgb(255, 255, 255);
     background-color: rgb(245, 246, 252);
+    margin-top: 8px;
     padding: 1rem 1rem 0.75rem;
   }
 
@@ -585,6 +646,7 @@ const ChooseDepositAmountWrapper = styled.div`
     pointer-events: initial;
   }
 `;
+
 const ChooseDepositAmount = (
   <ChooseDepositAmountWrapper>
     <Label fontSize={18} justifyContent={"flex-start"}>
@@ -605,12 +667,15 @@ const ChooseDepositAmount = (
           spellcheck="false"
           value={state.firstSelectedToken.amount}
           onChange={(e) => {
-            State.update({
-              firstSelectedToken: {
-                ...state.firstSelectedToken,
-                amount: Number(e.target.value),
-              },
-            });
+            const amount = e.target.value;
+            if (!amount || amount.match(/^\d{1,}(\.\d{0,20})?$/)) {
+              State.update({
+                firstSelectedToken: {
+                  ...state.firstSelectedToken,
+                  amount,
+                },
+              });
+            }
           }}
         />
         {state.firstSelectedToken.symbol && (
@@ -630,7 +695,7 @@ const ChooseDepositAmount = (
           {state.firstSelectedToken.symbol ? (
             <>
               $
-              {state.firstSelectedToken.amount *
+              {Number(state.firstSelectedToken.amount) *
                 state.firstSelectedToken.priceInUSD}
             </>
           ) : (
@@ -638,8 +703,20 @@ const ChooseDepositAmount = (
           )}
         </div>
         <div class="balance_container">
-          <div class="balance">Balance: 0</div>
-          <div class="max_balance_btn">MAX</div>
+          <div class="balance">Balance: {state.firstSelectedToken.balance}</div>
+          <div
+            class="max_balance_btn"
+            onClick={() =>
+              State.update({
+                firstSelectedToken: {
+                  ...state.firstSelectedToken,
+                  amount: state.firstSelectedToken.balance.toString(),
+                },
+              })
+            }
+          >
+            MAX
+          </div>
         </div>
       </div>
     </div>
@@ -659,12 +736,15 @@ const ChooseDepositAmount = (
           spellcheck="false"
           value={state.secondSelectedToken.amount}
           onChange={(e) => {
-            State.update({
-              secondSelectedToken: {
-                ...state.secondSelectedToken,
-                amount: Number(e.target.value),
-              },
-            });
+            const amount = e.target.value;
+            if (!amount || amount.match(/^\d{1,}(\.\d{0,20})?$/)) {
+              State.update({
+                secondSelectedToken: {
+                  ...state.secondSelectedToken,
+                  amount,
+                },
+              });
+            }
           }}
         />
         {state.secondSelectedToken.symbol && (
@@ -692,8 +772,22 @@ const ChooseDepositAmount = (
           )}
         </div>
         <div class="balance_container">
-          <div class="balance">Balance: 0</div>
-          <div class="max_balance_btn">MAX</div>
+          <div class="balance">
+            Balance: {state.secondSelectedToken.balance}
+          </div>
+          <div
+            class="max_balance_btn"
+            onClick={() =>
+              State.update({
+                secondSelectedToken: {
+                  ...state.secondSelectedToken,
+                  amount: state.secondSelectedToken.balance.toString(),
+                },
+              })
+            }
+          >
+            MAX
+          </div>
         </div>
       </div>
     </div>
@@ -707,7 +801,6 @@ const ChoosePriceRangeWrapper = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
   }
 
   .header .full_range_btn {
@@ -724,6 +817,14 @@ const ChoosePriceRangeWrapper = styled.div`
 
   .header .full_range_btn:hover {
     box-shadow: rgb(152, 161, 192) 0px 0px 0px 1px;
+  }
+  .current_price {
+    font-size: 14px;
+    color: rgb(119, 128, 160);
+    padding: 0 0 8px 8px;
+  }
+  .current_price .price {
+    font-weight: bold;
   }
   .price_choices_container {
     max-width: 500px;
@@ -824,11 +925,38 @@ const ChoosePriceRangeForm = (
         Full range
       </div>
     </div>
+    {state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && (
+      <div class="current_price">
+        {poolMetadata && currentPrice ? (
+          <>
+            Current price: <span class="price">{currentPrice.toString()}</span>
+          </>
+        ) : (
+          "Pool not created"
+        )}
+      </div>
+    )}
     <div class="price_choices_container">
       <div class="price_choice">
         <div class="top">
           <div class="price_label">Min Price</div>
-          <div class="price_adjust_btn plus">+</div>
+          <div
+            class="price_adjust_btn plus"
+            onClick={() => {
+              const prevLowPrice = Number(state.priceRange.lowPrice);
+              State.update({
+                priceRange: {
+                  ...state.priceRange,
+                  lowPrice:
+                    prevLowPrice <= INF - 1
+                      ? (prevLowPrice + 1).toString()
+                      : state.price.lowPrice,
+                },
+              });
+            }}
+          >
+            +
+          </div>
         </div>
         <div class="mid">
           <input
@@ -845,12 +973,15 @@ const ChoosePriceRangeForm = (
             spellcheck="false"
             value={state.priceRange.lowPrice}
             onChange={(e) => {
-              State.update({
-                priceRange: {
-                  ...state.priceRange,
-                  lowPrice: Number(e.target.value),
-                },
-              });
+              const amount = e.target.value;
+              if (!amount || amount.match(/^\d{1,}(\.\d{0,20})?$/)) {
+                State.update({
+                  priceRange: {
+                    ...state.priceRange,
+                    lowPrice: amount,
+                  },
+                });
+              }
             }}
           />
         </div>
@@ -858,18 +989,50 @@ const ChoosePriceRangeForm = (
           <div class="price_notation_label">
             {state.firstSelectedToken.symbol &&
               state.secondSelectedToken.symbol &&
-              state.firstSelectedToken.symbol +
+              state.secondSelectedToken.symbol +
                 " per " +
-                state.secondSelectedToken.symbol}
+                state.firstSelectedToken.symbol}
           </div>
-          <div class="price_adjust_btn minus">-</div>
+          <div
+            class="price_adjust_btn minus"
+            onClick={() => {
+              const prevLowPrice = Number(state.priceRange.lowPrice);
+              State.update({
+                priceRange: {
+                  ...state.priceRange,
+                  lowPrice:
+                    prevLowPrice >= 1
+                      ? (prevLowPrice - 1).toString()
+                      : state.priceRange.lowPrice,
+                },
+              });
+            }}
+          >
+            -
+          </div>
         </div>
       </div>
 
       <div class="price_choice">
         <div class="top">
           <div class="price_label">Max Price</div>
-          <div class="price_adjust_btn plus">+</div>
+          <div
+            class="price_adjust_btn plus"
+            onClick={() => {
+              const prevHighPrice = Number(state.priceRange.highPrice);
+              State.update({
+                priceRange: {
+                  ...state.priceRange,
+                  highPrice:
+                    prevHighPrice <= INF - 1
+                      ? (prevHighPrice + 1).toString()
+                      : state.priceRange.highPrice,
+                },
+              });
+            }}
+          >
+            +
+          </div>
         </div>
         <div class="mid">
           <input
@@ -878,24 +1041,23 @@ const ChoosePriceRangeForm = (
             autocomplete="off"
             autocorrect="off"
             type="text"
-            pattern="^[0-9]*[.,]?[0-9]*$"
+            pattern="^\d*(\.\d{0,20})?$"
             placeholder="0"
             minlength="1"
             max={INF}
             maxlength="20"
             spellcheck="false"
-            value={
-              state.priceRange.highPrice == INF
-                ? "oo"
-                : JSON.stringify(state.priceRange.highPrice)
-            }
+            value={state.priceRange.highPrice}
             onChange={(e) => {
-              State.update({
-                priceRange: {
-                  ...state.priceRange,
-                  highPrice: Number(e.target.value),
-                },
-              });
+              const amount = e.target.value;
+              if (!amount || amount.match(/^\d{1,}(\.\d{0,20})?$/)) {
+                State.update({
+                  priceRange: {
+                    ...state.priceRange,
+                    highPrice: amount,
+                  },
+                });
+              }
             }}
           />
         </div>
@@ -903,11 +1065,27 @@ const ChoosePriceRangeForm = (
           <div class="price_notation_label">
             {state.firstSelectedToken.symbol &&
               state.secondSelectedToken.symbol &&
-              state.firstSelectedToken.symbol +
+              state.secondSelectedToken.symbol +
                 " per " +
-                state.secondSelectedToken.symbol}
+                state.firstSelectedToken.symbol}
           </div>
-          <div class="price_adjust_btn minus">-</div>
+          <div
+            class="price_adjust_btn minus"
+            onClick={() => {
+              const prevHighPrice = Number(state.priceRange.highPrice);
+              State.update({
+                priceRange: {
+                  ...state.priceRange,
+                  highPrice:
+                    prevHighPrice >= 1
+                      ? (prevHighPrice - 1).toString()
+                      : state.priceRange.highPrice,
+                },
+              });
+            }}
+          >
+            -
+          </div>
         </div>
       </div>
     </div>
@@ -958,20 +1136,6 @@ const NewPositionButton = (
         width: "100%",
         justifyContent: "flex-end",
         fontSize: "16px",
-        color: "white",
-      },
-    }}
-  />
-);
-
-const ProvideLiquidityButton = (
-  <Widget
-    src={`${config.ownerId}/widget/ZSwap.Element.Button`}
-    props={{
-      onClick: () => {},
-      text: "Provide liquidity",
-      styles: {
-        width: "100%",
         color: "white",
       },
     }}
@@ -1111,6 +1275,61 @@ seriesRange.endDate = chart.data[chart.data.length - 1].date;
 <div id="chartdiv"></div>
 `;
 
+const ErrorBoxWrapper = styled.div`
+  .error {
+    text-align: center;
+    color: #dc3545;
+    font-size: 20px;
+    padding: 12px 0;
+  }
+`;
+
+const notEnoughAmount0 =
+  state.firstSelectedToken.symbol &&
+  Number(state.firstSelectedToken.amount) > state.firstSelectedToken.balance;
+const notEnoughAmount1 =
+  state.secondSelectedToken.symbol &&
+  Number(state.secondSelectedToken.amount) > state.secondSelectedToken.balance;
+const canProvideLiquidity =
+  (Number(state.firstSelectedToken.amount) > 0 ||
+    Number(state.secondSelectedToken.amount) > 0) &&
+  !notEnoughAmount0 &&
+  !notEnoughAmount1;
+
+const ErrorBox = (
+  <ErrorBoxWrapper>
+    <div class="error">
+      {notEnoughAmount0 ? (
+        <>Oops! You don't have enough {state.firstSelectedToken.symbol}</>
+      ) : (
+        notEnoughAmount1 && (
+          <>Oops! You don't have enough {state.secondSelectedToken.symbol}</>
+        )
+      )}
+    </div>
+  </ErrorBoxWrapper>
+);
+
+const ProvideLiquidityButton = (
+  <Widget
+    src={`${config.ownerId}/widget/ZSwap.Element.Button`}
+    props={{
+      onClick: () => {},
+      text:
+        poolMetadata ||
+        !state.firstSelectedToken.symbol ||
+        !state.secondSelectedToken.symbol
+          ? "Provide liquidity"
+          : "Create pool and provide liquidity",
+      styles: {
+        width: "100%",
+        color: "white",
+      },
+      background: canProvideLiquidity ? undefined : "#8bf1cc",
+    }}
+  />
+);
+
 const PoolDiaglog = (
   <>
     <DialogWrapper>
@@ -1206,7 +1425,7 @@ const PoolDiaglog = (
           <div style={{}}>{ChoosePriceRangeForm}</div>
         </Section>
       </DialogBody>
-      {state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && (
+      {/* {state.firstSelectedToken.symbol && state.secondSelectedToken.symbol && (
         <iframe
           className="border"
           style={{
@@ -1222,8 +1441,8 @@ const PoolDiaglog = (
           }}
           onMessage={(res1) => State.update({ res1 })}
         />
-      )}
-
+      )} */}
+      {ErrorBox}
       {ProvideLiquidityButton}
     </DialogWrapper>
   </>
