@@ -61,7 +61,7 @@ function getConfig(network) {
       };
     case "testnet":
       return {
-        ownerId: "zswap-builder.testnet",
+        ownerId: "zswap.testnet",
         contractId: "zswap-protocol.testnet",
         nodeUrl: "https://rpc.testnet.near.org",
         appUrl: "https://testnet.zswapprotocol.org",

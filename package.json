@@ -5,8 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
-    "start:testnet": "ZSWAP_BOS_URL=https://test.near.org/zswap-builder.testnet/widget/ZSwap && open $ZSWAP_BOS_URL && echo \"Preview at: $ZSWAP_BOS_URL\"",
-    "dev": "yarn start:testnet && bos-loader zswap-builder.testnet --path src"
+    "start:testnet": "ZSWAP_BOS_URL=https://test.near.org/zswap.testnet/widget/ZSwap && open $ZSWAP_BOS_URL && echo \"Preview at: $ZSWAP_BOS_URL\"",
+    "dev": "yarn start:testnet && bos-loader zswap.testnet --path src"
   },
   "repository": {
     "type": "git",
