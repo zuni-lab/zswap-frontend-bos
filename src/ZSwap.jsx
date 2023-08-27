@@ -2,8 +2,9 @@
 
 /* FOR STYLING */
 const App = styled.div`
+  position: relative;
   width: 100%;
-  height: 80vh;
+  min-height: 100vh;
   padding: 8px;
 `;
 
@@ -12,12 +13,11 @@ const MainLayout = styled.div`
   height: calc(100% - 8px);
   border-radius: 20px;
   box-sizing: border-box;
-  // box-shadow: 1px 6px 4px -1px rgba(60, 216, 157, 0.3),
-  //   1px 2px 4px -2px rgba(60, 216, 157, 0.5);
 `;
 
 const Container = styled.div`
   width: 100%;
+  height: 100%;
   margin-top: 20px;
   padding: 20px 12px;
   display: flex;
@@ -27,7 +27,6 @@ const Container = styled.div`
 
 const OverflowContainer = styled.div`
   width: 100%;
-  height: 56vh;
   padding: 4px 8px;
   overflow-y: scroll;
   display: flex;
@@ -50,22 +49,6 @@ const OverflowContainer = styled.div`
   }
 `;
 
-/** common lib start */
-const accountId = props.accountId || context.accountId;
-const isSignedIn = !!accountId;
-const NEAR_DECIMALS = 24;
-const ZSWAP_DECIMALS = 24;
-const BIG_ROUND_DOWN = 0;
-const MIN_BALANCE_CHANGE = 0.5;
-
-function isValid(a) {
-  if (!a) return false;
-  if (isNaN(Number(a))) return false;
-  if (a === "") return false;
-  return true;
-}
-/** common lib end */
-
 // Config for ZSwap app
 function getConfig(network) {
   switch (network) {
@@ -78,7 +61,7 @@ function getConfig(network) {
       };
     case "testnet":
       return {
-        ownerId: "zswap-builder.testnet",
+        ownerId: "zswap.testnet",
         contractId: "zswap-protocol.testnet",
         nodeUrl: "https://rpc.testnet.near.org",
         appUrl: "https://testnet.zswapprotocol.org",
@@ -89,133 +72,35 @@ function getConfig(network) {
 }
 const config = getConfig(context.networkId);
 
+const RouterRecords = {
+  swap: {
+    name: "swap",
+    title: "Swap",
+    description: "Swap tokens",
+    path: "widget/ZSwap.Page.Swap.MainSwap",
+  },
+  pools: {
+    name: "pools",
+    title: "Pools",
+    description: "View pools",
+    path: "widget/ZSwap.Page.Pools.Pools",
+  },
+  tokens: {
+    name: "tokens",
+    title: "Tokens",
+    description: "View tokens",
+    path: "widget/ZSwap.Page.Tokens.Tokens",
+  },
+};
+
 State.init({
-  tabName: "stake", // stake | unstake
-  page: "swap", // "swap" | "pool" | "tokens" | "account"
-  nearBalance: "",
+  page: RouterRecords.swap.name,
   unstakeInfo: {},
 });
 
-const updateTabName = (tabName) =>
-  State.update({
-    tabName,
-  });
-
-const updatePage = (pageName) => State.update({ page: pageName });
-
-// Account balances
-function getNearBalance(accountId, onInvalidate) {
-  const options = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: "dontcare",
-      method: "query",
-      params: {
-        request_type: "view_account",
-        finality: "final",
-        account_id: accountId,
-      },
-    }),
-  };
-  asyncFetch(config.nodeUrl, options).then((res) => {
-    const { amount, storage_usage } = res.body.result;
-    const COMMON_MIN_BALANCE = 0.05;
-
-    let newBalance = "-";
-    if (amount) {
-      const availableBalance = Big(amount || 0).minus(
-        Big(storage_usage).mul(Big(10).pow(19))
-      );
-      const balance = availableBalance
-        .div(Big(10).pow(NEAR_DECIMALS))
-        .minus(COMMON_MIN_BALANCE);
-      newBalance = balance.lt(0) ? "0" : balance.toFixed(5, BIG_ROUND_DOWN);
-    }
-    State.update({
-      nearBalance: newBalance,
-    });
-    if (onInvalidate) {
-      onInvalidate(nearBalance, newBalance);
-    }
-  });
-}
-
-function getZswapBalance(accountId, subscribe) {
-  const zswapBalanceRaw = Near.view(
-    config.contractId,
-    "ft_balance_of",
-    {
-      account_id: accountId,
-    },
-    undefined,
-    subscribe
-  );
-  if (!zswapBalanceRaw) return "-";
-  const balance = Big(zswapBalanceRaw).div(Big(10).pow(ZSWAP_DECIMALS));
-  return balance.lt(0) ? "0" : balance.toFixed();
-}
-
-function getAccountDetails(accountId, subscribe) {
-  return Near.view(
-    config.contractId,
-    "get_account_details",
-    {
-      account_id: accountId,
-    },
-    undefined,
-    subscribe
-  );
-}
-
-const nearBalance = accountId ? state.nearBalance : "-";
-// Initial fetch of account NEAR balance
-if (accountId && !isValid(nearBalance)) {
-  getNearBalance(accountId);
-}
-const zswapBalance = accountId ? getZswapBalance(accountId) : "-";
-const accountDetails = accountId ? getAccountDetails(accountId) : "-";
-
-function updateAccountInfo({ notUpdateNearBalance, callback }) {
-  const interval1 = setInterval(() => {
-    const data = getAccountDetails(accountId, true);
-    if (
-      data.unstaked_balance !== accountDetails.unstaked_balance ||
-      data.staked_balance !== accountDetails.staked_balance
-    ) {
-      // stop polling
-      clearInterval(interval1);
-      // update NEAR and ZSwap balances
-      getZswapBalance(accountId, true);
-      if (notUpdateNearBalance) {
-        getNearBalance(accountId);
-      }
-      // invoke callback functions if any
-      if (callback) callback();
-    }
-  }, 500);
-  if (!notUpdateNearBalance) {
-    const interval2 = setInterval(() => {
-      getNearBalance(accountId, (oldBalance, newBalance) => {
-        if (
-          newBalance !== "-" &&
-          oldBalance !== "-" &&
-          Big(newBalance).sub(oldBalance).abs().gt(MIN_BALANCE_CHANGE)
-        ) {
-          // stop polling
-          clearInterval(interval2);
-        }
-      });
-    }, 500);
-  }
-}
-
-function onLoad(data) {
-  State.update({ unstakeInfo: data });
-}
+const updatePage = (pageName) => {
+  State.update({ page: pageName });
+};
 
 const SwapView = () => {
   return (
@@ -223,38 +108,14 @@ const SwapView = () => {
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
-          title: "Trade crypto and NFTs with confidence",
-          description: "Buy, sell, and explore tokens and NFTs",
+          title: RouterRecords.swap.title,
+          description: RouterRecords.swap.description,
         }}
       />
-      <OverflowContainer>
-        <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} />
-        <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Tab`}
-          props={{
-            tabName: state.tabName,
-            updateTabName,
-          }}
-        />
-        {state.tabName === "stake" && (
-          <Widget
-            src={`${config.ownerId}/widget/ZSwap.Page.Swap.Buy.Buy`}
-            props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
-          />
-        )}
-        {state.tabName === "unstake" && (
-          <Widget
-            src={`${config.ownerId}/widget/ZSwap.Page.Swap.Sell.Sell`}
-            props={{
-              config,
-              zswapBalance,
-              unstakeInfo: state.unstakeInfo,
-              updateAccountInfo,
-              updatePage,
-            }}
-          />
-        )}
-      </OverflowContainer>
+      <Widget
+        src={`${config.ownerId}/${RouterRecords.swap.path}`}
+        props={{ config }}
+      />
     </Container>
   );
 };
@@ -265,36 +126,15 @@ const PoolView = () => {
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
-          title: "Your active liquidity positions will appear here.",
-          description: "",
+          title: RouterRecords.pools.title,
+          description: RouterRecords.pools.description,
+          config: config,
         }}
       />
-      <Widget src={`${config.ownerId}/widget/ZSwap.Data.Apy`} />
       <Widget
-        src={`${config.ownerId}/widget/ZSwap.Page.Swap.Tab`}
-        props={{
-          tabName: state.tabName,
-          updateTabName,
-        }}
+        src={`${config.ownerId}/${RouterRecords.pools.path}`}
+        props={{ config }}
       />
-      {state.tabName === "stake" && (
-        <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Buy.Buy`}
-          props={{ config, nearBalance, zswapBalance, updateAccountInfo }}
-        />
-      )}
-      {state.tabName === "unstake" && (
-        <Widget
-          src={`${config.ownerId}/widget/ZSwap.Page.Swap.Sell.Sell`}
-          props={{
-            config,
-            zswapBalance,
-            unstakeInfo: state.unstakeInfo,
-            updateAccountInfo,
-            updatePage,
-          }}
-        />
-      )}
     </Container>
   );
 };
@@ -303,55 +143,42 @@ const TokenView = () => {
   return (
     <Container>
       <Widget
-        src={`${config.ownerId}/widget/ZSwap.Page.Tokens.Tokens`}
+        src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
         props={{
-          config,
-          nearBalance,
-          zswapBalance,
-          unstakeInfo: state.unstakeInfo,
-          updatePage,
-          updateTabName,
-          updateAccountInfo,
+          title: RouterRecords.tokens.title,
+          description: RouterRecords.tokens.description,
         }}
       />
+      <div
+        style={{
+          marginTop: "20px",
+          width: "100%",
+          marginTop: "20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Widget src={`${config.ownerId}/${RouterRecords.tokens.path}`} />
+      </div>
     </Container>
   );
 };
-const AccountView = () => {
-  return (
-    <Widget
-      src={`${config.ownerId}/widget/ZSwap.Page.Account.Account`}
-      props={{
-        config,
-        nearBalance,
-        zswapBalance,
-        unstakeInfo: state.unstakeInfo,
-        updatePage,
-        updateTabName,
-        updateAccountInfo,
-      }}
-    />
-  );
-};
 
-const body =
-  state.page === "swap" ? (
-    <SwapView />
-  ) : state.page === "pools" ? (
-    <PoolView />
-  ) : state.page == "tokens" ? (
-    <TokenView />
-  ) : (
-    <AccountView />
-  );
+function getBody() {
+  switch (state.page) {
+    case RouterRecords.swap.name:
+      return <SwapView />;
+    case RouterRecords.pools.name:
+      return <PoolView />;
+    case RouterRecords.tokens.name:
+      return <TokenView />;
+  }
+}
 
 return (
   <App>
     <MainLayout>
-      <Widget
-        src={`${config.ownerId}/widget/ZSwap.Data.Unstake`}
-        props={{ config, accountDetails, onLoad }}
-      />
       <Widget
         src={`${config.ownerId}/widget/ZSwap.Layout.Navigation`}
         props={{
@@ -359,7 +186,7 @@ return (
           page: state.page,
         }}
       />
-      {body}
+      {getBody()}
     </MainLayout>
   </App>
 );

@@ -1,4 +1,4 @@
-# ZSwap BOS Components
+# ZSwap BOS Frontend Components 
 
 [ZSwap Protocol](https://ZSwapprotocol.org/) is a liquid staking solution built on the NEAR Protocol. ZSwap unlocks liquidity of the staked NEAR by creating a staking derivative to be engaged with various DeFi protocols on NEAR and Aurora, while also enjoying over 10% APY staking rewards of the underlying base tokens. ZSwap is the cornerstone piece of the NEAR-Aurora DeFi ecosystem.
 
@@ -33,7 +33,7 @@ yarn install
 ```bash
 yarn dev
 ```
-5. Launch testnet [preview page](https://test.near.org/ZSwap-builder.testnet/widget/ZSwap)
+5. Launch testnet [preview page](https://test.near.org/zswap.testnet/widget/ZSwap)
 6. Modify ZSwap components code, and refresh preview page to view the latest change. Please notice that because **hot reload** is not ready in BOS loader, you need to refresh the preview page in browser after code change.
 
 7. [`prettier`](https://prettier.io/) is configured in Git pre-commit hook with [husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/okonet/lint-staged) to automatically format the modified components code.

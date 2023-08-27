@@ -11,10 +11,9 @@ const PrimaryButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #0d9488;
+  background-color: ${props.background ?? "#2BCC91"};
   color: white;
   border-radius: 10px;
-  font-size: ${size === "lg" ? "20px" : "16px"};
   font-weight: bold;
   overflow: hidden;
   padding: ${padding === "normal" ? "8px 0" : "12px 24px"};
@@ -73,6 +72,7 @@ if (type === "outline") {
         width={props.width}
       >
         {props.text}
+        <span>{props.icon}</span>
       </PrimaryButton>
     </div>
   );

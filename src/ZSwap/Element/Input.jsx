@@ -1,109 +1,144 @@
 // MIT License: https://github.com/DV-Lab/zswap-frontend-bos/blob/main/LICENSE
 
-const InputWrapper = styled.div`
+const Wrapper = styled.div`
   width: 100%;
   border-radius: 10px;
   padding: 20px;
   color: black;
+  border: 2px solid #2bcc91;
+  background-color: rgba(13, 148, 136, 0.05);
+  min-height: 170px;
+  cursor: default;
 `;
 
-const HorizentalLine = styled.hr`
-  height: 1px;
-  border: none;
-  background: white;
-  opacity: 0.1;
-  margin-top: 16px;
+const NEARInputContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
 const BalanceContainer = styled.div`
-  color: #0d9488;
+  color: #2bcc91;
   font-size: 16px;
+  flex: 1;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
   .error {
     color: #ec6868;
   }
 `;
 
-const NEARInputContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-`;
-
-const NEARTexture = styled.div`
-  font-size: 24px;
-  font-weight: bold;
-  margin-left: 10px;
-`;
-
-const LogoWithText = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
 const MaxTexture = styled.div`
-  font-size: 24px;
-  color: #0d9488;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2bcc91;
   cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const Label = styled.label`
+  font-size: ${(props) => props.fontSize || "22px"};
+  font-weight: ${(props) => props.fontWeight || "600"};
+  color: ${(props) => props.color || "#6b7280"};
+  margin-bottom: 8px;
+`;
+
+const Container = styled.div`
+  display: flex;
+  gap: 16px;
+  position: relative;
+  width: 100%;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  transition: opacity 0.2s ease-in-out 0s;
+  text-align: left;
+  color: rgb(13, 17, 28);
+  font-weight: 400;
+  outline: none;
+  border: medium;
+  flex: 1 1 auto;
+  font-size: 28px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  appearance: textfield;
+  padding: 16px 16px;
+  background: rgba(0, 0, 0, 0.01);
+  border-radius: 8px;
 `;
 
 return (
-  <InputWrapper>
+  <Wrapper>
     <NEARInputContainer>
-      <LogoWithText>
-        <img
-          src={
-            props.iconUrl ||
-            `https://ipfs.near.social/ipfs/bafkreid5xjykpqdvinmj432ldrkbjisrp3m4n25n4xefd32eml674ypqly`
-          }
-          width={26}
-          height={26}
-          alt="Token Icon"
-        />
-        <NEARTexture>{props.iconName}</NEARTexture>
-      </LogoWithText>
-      <div
-        style={{
-          display: "flex",
-          gap: "16px",
-          flex: "1",
-        }}
-      >
-        <input
-          style={{
-            "text-align": "right",
-            background: "transparent",
-            border: "1px solid #0d9488",
-            "font-size": "16px",
-            "font-weight": "bold",
-            color: props.inputError ? "#ec6868" : "black",
-            "margin-right": "16px",
-            outlineColor: "grey",
-            "--webkit-appearance": "none",
-            "--moz-appearance": "textfield",
-            cursor: "auto",
-            flex: 1,
-            boxShadow: "none",
-          }}
-          placeholder={props.placeholder}
+      <Label>{props.label}</Label>
+      <Container>
+        <Input
+          placeholder={0}
           value={props.value}
-          onChange={props.onChange}
+          onChange={props?.onChange}
+          textColor={props.inputError && "#ec6868"}
+          disabled={!props?.onChange}
         />
+
         <div
           style={{
-            width: "10%",
+            width: "27%",
+            minHeight: "100%",
+            display: "flex",
           }}
         >
-          <MaxTexture onClick={props.onClickMax}>MAX</MaxTexture>
+          <Widget
+            src={`${props?.config.ownerId}/widget/ZSwap.Element.CustomSelect`}
+            props={{
+              selectedItem:
+                props.selectedToken !== "UNKNOWN" ? props.selectedToken : "",
+              list: props.listToken.map((t) => {
+                return {
+                  value: t.symbol,
+                  icon: t.icon,
+                };
+              }),
+              bottom: props.selectPosition.bottom,
+              onChangeItem: props.onChangeToken,
+            }}
+          />
         </div>
-      </div>
+      </Container>
     </NEARInputContainer>
-    <HorizentalLine />
-    <BalanceContainer>
-      <p>Balance: {props.balance}</p>
-      <p className="error">{props.inputError}</p>
-    </BalanceContainer>
-  </InputWrapper>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "between",
+      }}
+    >
+      <div
+        style={{
+          color: "#ec6868",
+        }}
+      >
+        {props.inputError}
+      </div>
+      {props.showBalance && (
+        <BalanceContainer>
+          <div
+            style={{
+              color: "black",
+            }}
+          >
+            Balance: <span>{props.balance}</span>
+          </div>
+
+          <div>
+            <MaxTexture onClick={props.onClickMax}>Max</MaxTexture>
+          </div>
+        </BalanceContainer>
+      )}
+    </div>
+  </Wrapper>
 );
