@@ -58,25 +58,13 @@ const TOKEN_RECORDS = [
     ),
   },
   {
-    name: "NEAR",
-    symbol: "NEAR",
+    name: "ZNEAR",
+    symbol: "ZNEAR",
     icon: (
       <img
         src={
           "https://seeklogo.com/images/N/near-icon-logo-10785AE366-seeklogo.com.png"
         }
-        width={26}
-        height={26}
-        alt="NEAR ICON"
-      />
-    ),
-  },
-  {
-    name: "ETHEREUM",
-    symbol: "ETH",
-    icon: (
-      <img
-        src={"https://s2.coinmarketcap.com/static/img/coins/200x200/1027.png"}
         width={26}
         height={26}
         alt="NEAR ICON"
@@ -157,7 +145,7 @@ const onChange = (e) => {
   ) {
     //TODO: replace logic here
     const token0 = stakeAmount;
-    const token1 = (stakeAmount % 10) + 8000;
+    const token1 = stakeAmount;
     if (
       isNaN(Number(stakeAmount)) ||
       stakeAmount === "" ||
@@ -179,7 +167,7 @@ const onChange = (e) => {
   }
   //TODO: replace logic here
   const token0 = stakeAmount;
-  const token1 = (stakeAmount % 10) + 8000;
+  const token1 = stakeAmount;
   State.update({
     token0: token0,
     token1: token1,

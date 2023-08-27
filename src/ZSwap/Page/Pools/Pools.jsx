@@ -2,41 +2,26 @@
 const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
 
-// interface TokenRecord {
-//   assetName: string;
-//   pairSymbol: string;
-//   logo: string;
-//   cmcLink: string;
-// }
+const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
 
-const TOKEN_RECORDS = JSON.parse(
-  fetch(
-    "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
-  ).body
-);
+function $fetchTokenMetadata() {
+  console.log("Fetching token metadata...");
+  const metadata = TOKEN_ACCOUNTS.map((t) => {
+    console.log({ t });
+    const res = Near.view(t, "ft_metadata", {});
+    console.log({ res });
+  });
+  console.log("Tokens are ", metadata);
+  const tokens = metadata.map((t) => ({
+    value: t.symbol,
+    icon: t.icon,
+  }));
+  State.update({
+    TOKENS: tokens,
+  });
+}
 
-const TOKENS = {};
-
-Object.keys(TOKEN_RECORDS).forEach((pair) => {
-  if (pair.slice(-4) === "USDT") {
-    const tokenSymbol = pair.slice(0, -5);
-    if (tokenSymbol) {
-      TOKENS[tokenSymbol] = {
-        ...TOKEN_RECORDS[pair],
-        priceInUSD: -1,
-      };
-    }
-  }
-});
-
-// {
-//   "1INCH": {
-//     "assetName": "1inch Network",
-//     "pairSymbol": "1INCH/USDT",
-//     "logo": "https://s2.coinmarketcap.com/static/img/coins/64x64/8104.png",
-//     "cmcLink": "https://www.binance.com/en/trade/1INCH_USDT"
-//   }
-// }
+$fetchTokenMetadata();
 
 const INF = 1e308;
 
@@ -56,10 +41,31 @@ State.init({
     lowPrice: 0,
     highPrice: INF,
   },
+  TOKENS: {},
+  fetchedTokensList: false,
   inputError: "",
   show_fee_choices: false,
   fee_chosen: 0,
 });
+
+function run() {
+  Near.call(
+    "znear.zswap.testnet",
+    "mint",
+    {
+      receiver_id: context.accountId,
+      amount: "100000",
+    },
+    300 * 1000000000000,
+    1000000000000000000000000
+  );
+}
+
+if (!state.fetchedTokensList) {
+  State.update({
+    fetchedTokensList: true,
+  });
+}
 
 /** Static variables */
 const { config } = props;
@@ -146,7 +152,7 @@ const connectWallet =
   });
 
 const getPriceOfTokenIfNeeded = (token) => {
-  if (TOKENS[token].priceInUSD < 0) {
+  if (state.TOKENS[token].priceInUSD < 0) {
     console.log("Start fetching price for " + token + "...");
     asyncFetch(
       "https://api.unmarshal.com/v1/pricestore/" +
@@ -154,12 +160,18 @@ const getPriceOfTokenIfNeeded = (token) => {
         "?auth_key=9v0mXZlpj27qoEmabpGJ8amEICsKmRWl6KgVnCOs"
     ).then((res) => {
       try {
-        TOKENS[token] = {
-          ...TOKENS[token],
-          priceInUSD: Number(res.body[0].price),
-        };
+        const price = Number(res.body[0].price);
+        State.update({
+          TOKENS: {
+            ...state.TOKENS,
+            [token]: {
+              ...state.TOKENS[token],
+              priceInUSD: price,
+            },
+          },
+        });
 
-        console.log("Price of " + token + " is ", TOKENS[token].priceInUSD);
+        console.log("Price of " + token + " is ", price);
 
         // trigger re-rendering
         State.update({
@@ -167,20 +179,38 @@ const getPriceOfTokenIfNeeded = (token) => {
             ...state.firstSelectedToken,
             priceInUSD:
               token == state.firstSelectedToken.symbol
-                ? res.body[0].price
+                ? price
                 : state.firstSelectedToken.priceInUSD,
           },
           secondSelectedToken: {
             ...state.secondSelectedToken,
             priceInUSD:
               token == state.secondSelectedToken.symbol
-                ? res.body[0].price
+                ? price
                 : state.secondSelectedToken.priceInUSD,
           },
         });
       } catch (err) {
         console.log(err);
       }
+    });
+  } else {
+    const price = state.TOKENS[token].priceInUSD;
+    State.update({
+      firstSelectedToken: {
+        ...state.firstSelectedToken,
+        priceInUSD:
+          token == state.firstSelectedToken.symbol
+            ? price
+            : state.firstSelectedToken.priceInUSD,
+      },
+      secondSelectedToken: {
+        ...state.secondSelectedToken,
+        priceInUSD:
+          token == state.secondSelectedToken.symbol
+            ? price
+            : state.secondSelectedToken.priceInUSD,
+      },
     });
   }
 };
@@ -526,7 +556,7 @@ const ChooseDepositAmount = (
           pattern="^[0-9]*[.,]?[0-9]*$"
           placeholder="0"
           minlength="1"
-          maxlength="79"
+          maxlength="20"
           spellcheck="false"
           value={state.firstSelectedToken.amount}
           onChange={(e) => {
@@ -541,7 +571,7 @@ const ChooseDepositAmount = (
         {state.firstSelectedToken.symbol && (
           <div class="token_name">
             <img
-              src={TOKENS[state.firstSelectedToken.symbol].logo}
+              src={state.TOKENS[state.firstSelectedToken.symbol].logo}
               width={24}
               height={24}
               alt={state.firstSelectedToken.symbol}
@@ -552,11 +582,15 @@ const ChooseDepositAmount = (
       </div>
       <div class="bottom_row">
         <div class="usd_valuation">
-          $
-          {state.firstSelectedToken
-            ? state.firstSelectedToken.amount *
-              state.firstSelectedToken.priceInUSD
-            : "-"}
+          {state.firstSelectedToken.symbol ? (
+            <>
+              $
+              {state.firstSelectedToken.amount *
+                state.firstSelectedToken.priceInUSD}
+            </>
+          ) : (
+            "-"
+          )}
         </div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
@@ -576,7 +610,7 @@ const ChooseDepositAmount = (
           pattern="^[0-9]*[.,]?[0-9]*$"
           placeholder="0"
           minlength="1"
-          maxlength="79"
+          maxlength="20"
           spellcheck="false"
           value={state.secondSelectedToken.amount}
           onChange={(e) => {
@@ -591,7 +625,7 @@ const ChooseDepositAmount = (
         {state.secondSelectedToken.symbol && (
           <div class="token_name">
             <img
-              src={TOKENS[state.secondSelectedToken.symbol].logo}
+              src={state.TOKENS[state.secondSelectedToken.symbol].logo}
               width={24}
               height={24}
               alt={state.secondSelectedToken.symbol}
@@ -602,11 +636,15 @@ const ChooseDepositAmount = (
       </div>
       <div class="bottom_row">
         <div class="usd_valuation">
-          $
-          {state.secondSelectedToken
-            ? state.secondSelectedToken.amount *
-              state.secondSelectedToken.priceInUSD
-            : "-"}
+          {state.secondSelectedToken.symbol ? (
+            <>
+              $
+              {state.secondSelectedToken.amount *
+                state.secondSelectedToken.priceInUSD}
+            </>
+          ) : (
+            "-"
+          )}
         </div>
         <div class="balance_container">
           <div class="balance">Balance: 0</div>
@@ -758,7 +796,7 @@ const ChoosePriceRangeForm = (
             placeholder="0"
             min={0}
             minlength="1"
-            maxlength="79"
+            maxlength="20"
             spellcheck="false"
             value={state.priceRange.lowPrice}
             onChange={(e) => {
@@ -799,12 +837,12 @@ const ChoosePriceRangeForm = (
             placeholder="0"
             minlength="1"
             max={INF}
-            maxlength="79"
+            maxlength="20"
             spellcheck="false"
             value={
               state.priceRange.highPrice == INF
                 ? "oo"
-                : state.priceRange.highPrice
+                : JSON.stringify(state.priceRange.highPrice)
             }
             onChange={(e) => {
               State.update({
@@ -1073,10 +1111,7 @@ const PoolDiaglog = (
                 selectedItem: state.firstSelectedToken.symbol
                   ? state.firstSelectedToken.symbol
                   : "",
-                list: Object.keys(TOKENS).map((symbol) => ({
-                  value: symbol,
-                  icon: TOKENS[symbol].logo,
-                })),
+                list: state.TOKENS,
                 onChangeItem: onFirstTokenChange,
               }}
               style={{
@@ -1089,9 +1124,9 @@ const PoolDiaglog = (
                 selectedItem: state.secondSelectedToken.symbol
                   ? state.secondSelectedToken.symbol
                   : "",
-                list: Object.keys(TOKENS).map((symbol) => ({
+                list: Object.keys(state.TOKENS).map((symbol) => ({
                   value: symbol,
-                  icon: TOKENS[symbol].logo,
+                  icon: state.TOKENS[symbol].logo,
                 })),
                 onChangeItem: onSecondTokenChange,
               }}
