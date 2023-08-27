@@ -3,14 +3,17 @@ const NEAR_DECIMALS = 24;
 const BIG_ROUND_DOWN = 0;
 
 const fee_descriptions = [
-  [0.01, "very stable pairs", 32],
+  // [0.01, "very stable pairs", 32],
   [0.05, "stable pairs", 0],
   [0.3, "most pairs", 0],
-  [0.1, "exotic pairs", 0],
+  // [0.1, "exotic pairs", 0],
 ];
 // Define components
+const MIN_TICK = -887272;
+const MAX_TICK = 887272;
 
-const INF = 1e308;
+const MIN_PRICE = Math.pow(1.0001, MIN_TICK);
+const MAX_PRICE = Math.pow(1.0001, MAX_TICK);
 
 /** State */
 State.init({
@@ -352,23 +355,6 @@ const onFirstTokenChange = (token) => {
 
 const onSecondTokenChange = (token) => {
   let prevSecond = state.secondSelectedToken.symbol;
-
-  console.log("got ", token, prevSecond, prev.firstSelectedToken, " => ", {
-    secondSelectedToken: {
-      ...state.secondSelectedToken,
-      symbol: token,
-      amount: 0,
-      balance: 0,
-    },
-    ...(token === state.firstSelectedToken.symbol && {
-      firstSelectedToken: {
-        ...state.firstSelectedToken,
-        symbol: prevSecond,
-        amount: 0,
-        balance: 0,
-      },
-    }),
-  });
 
   State.update({
     secondSelectedToken: {
@@ -918,7 +904,7 @@ const ChoosePriceRangeForm = (
         class="full_range_btn"
         onClick={() => {
           State.update({
-            priceRange: { lowPrice: 0, highPrice: INF },
+            priceRange: { lowPrice: 0, highPrice: MAX_PRICE },
           });
         }}
       >
@@ -948,7 +934,7 @@ const ChoosePriceRangeForm = (
                 priceRange: {
                   ...state.priceRange,
                   lowPrice:
-                    prevLowPrice <= INF - 1
+                    prevLowPrice <= MAX_PRICE - 1
                       ? (prevLowPrice + 1).toString()
                       : state.price.lowPrice,
                 },
@@ -1024,7 +1010,7 @@ const ChoosePriceRangeForm = (
                 priceRange: {
                   ...state.priceRange,
                   highPrice:
-                    prevHighPrice <= INF - 1
+                    prevHighPrice <= MAX_PRICE - 1
                       ? (prevHighPrice + 1).toString()
                       : state.priceRange.highPrice,
                 },
@@ -1044,7 +1030,7 @@ const ChoosePriceRangeForm = (
             pattern="^\d*(\.\d{0,20})?$"
             placeholder="0"
             minlength="1"
-            max={INF}
+            max={MAX_PRICE}
             maxlength="20"
             spellcheck="false"
             value={state.priceRange.highPrice}
@@ -1310,17 +1296,23 @@ const ErrorBox = (
   </ErrorBoxWrapper>
 );
 
+const provideLiquidityOnExistingPool =
+  poolMetadata ||
+  !state.firstSelectedToken.symbol ||
+  !state.secondSelectedToken.symbol;
+
 const ProvideLiquidityButton = (
   <Widget
     src={`${config.ownerId}/widget/ZSwap.Element.Button`}
     props={{
-      onClick: () => {},
-      text:
-        poolMetadata ||
-        !state.firstSelectedToken.symbol ||
-        !state.secondSelectedToken.symbol
-          ? "Provide liquidity"
-          : "Create pool and provide liquidity",
+      onClick: () => {
+        if (provideLiquidityOnExistingPool) {
+        } else {
+        }
+      },
+      text: provideLiquidityOnExistingPool
+        ? "Provide liquidity"
+        : "Create pool and provide liquidity",
       styles: {
         width: "100%",
         color: "white",
