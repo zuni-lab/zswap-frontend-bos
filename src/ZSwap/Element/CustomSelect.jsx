@@ -15,7 +15,7 @@ const SelectBody = styled.div`
   width: 100%;
   max-height: 250px;
   overflow: auto;
-  padding: 8px 16px;
+  padding: 8px 2px;
   font-size: auto;
   color: black;
   background: white;
@@ -36,8 +36,7 @@ const CustomSelect = styled.div`
   font-size: ${props.fontSize ?? "auto"};
   color: ${props.textColor ?? "black"};
   cursor: pointer;
-  ${props.selectedItem === "" &&
-  `&:after {
+  &:after {
     content: "";
     position: absolute;
     top: 50%;
@@ -48,15 +47,21 @@ const CustomSelect = styled.div`
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 6px solid ${props.textColor ?? "gray"};
-  }`}
+  }
 `;
 
 const LogoWithText = styled.div`
+  width: 93%;
   display: flex;
   align-items: center;
   cursor: pointer;
   color: rgb(13, 17, 28);
   font-size: 16px;
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  padding: 8px;
+  border-radius: 8px;
 `;
 
 const Span = styled.span`

@@ -143,23 +143,7 @@ function $fetchTokenMetadata() {
   });
 }
 
-function run() {
-  if (context.accountId) {
-    Near.call(
-      "znear.zswap.testnet",
-      "mint",
-      {
-        receiver_id: context.accountId,
-        amount: "100000",
-      },
-      300000000000000,
-      1000000000000000000000000
-    );
-  }
-}
-
 if (!state.fetchedTokensList) {
-  console.log("ACcountId = ", context.accountId);
   State.update({
     fetchedTokensList: true,
   });
@@ -182,8 +166,7 @@ const Main = styled.div`
   padding: 40px;
   border-radius: 10px;
   //shadow-xl
-  box-shadow:
-    0 20px 25px -5px rgb(0 0 0 / 0.1),
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
   color: black;
 `;
