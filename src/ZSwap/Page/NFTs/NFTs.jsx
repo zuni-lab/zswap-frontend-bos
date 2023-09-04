@@ -14,39 +14,17 @@ const Wrapper = styled.div`
   color: black;
 `;
 
-const OverflowContainer = styled.div`
-  width: 100%;
-  padding: 4px 8px;
-  overflow-y: scroll;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  &::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.1);
-    background-color: transparent;
-    border-radius: 10px;
-    margin-top: 0px;
-    margin-left: 4px;
-  }
-  &::-webkit-scrollbar {
-    width: 8px;
-    background-color: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: #3cd89d;
-    border: 1px solid rgba(252, 254, 231, 1);
-  }
-`;
-
 const Container = styled.div`
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 95%;
+  flex-wrap: wrap;
+  width: 100%;
   height: 100%;
-  gap: 8px;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  border: 2px solid #ddd;
 `;
 
 const Table = styled.div`
@@ -83,23 +61,31 @@ const Tr = styled.tr`
 
 /** State */
 State.init({
-  NFTs: [
-    { name: "Token 1", symbol: "TKN1", price: 1.0, change: 0.1 },
-    { name: "Token 2", symbol: "TKN2", price: 2.0, change: 0.2 },
-    { name: "Token 3", symbol: "TKN3", price: 3.0, change: 0.3 },
-    { name: "Token 4", symbol: "TKN4", price: 4.0, change: 0.4 },
-    { name: "Token 5", symbol: "TKN5", price: 5.0, change: 0.5 },
-  ],
+  NFTs: [],
 });
 /** side effect function */
 
-function $fetchListOfNFT() {
-  const res = Near.asyncView("manager.zswap.testnet", "nft_tokens_for_owner", {
+function fetchListOfNFT() {
+  return Near.asyncView("manager.zswap.testnet", "nft_tokens_for_owner", {
     account_id: "traderz.testnet",
     fee: 3000,
+  }).then((res) => {
+    return res.map((item) => {
+      return {
+        title: item.metadata.title,
+        description: item.metadata.description,
+        image: item.metadata.media,
+      };
+    });
   });
-  console.log({ res });
 }
+
+const $fetchListOfNFT = () => {
+  fetchListOfNFT().then((res) => {
+    const array = Array(10).fill(res[0]);
+    State.update({ NFTs: array });
+  });
+};
 
 /**
  *
@@ -111,41 +97,32 @@ function $fetchListOfNFT() {
 /** Handle events  */
 
 /** Call function */
+
 $fetchListOfNFT();
 
 return (
   <Wrapper>
     <Container>
-      <Table>
-        <table class="table-fixed">
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Name</th>
-              <th>Symbol</th>
-              <th>Pice</th>
-              <th>Change</th>
-            </tr>
-          </thead>
-          <tbody>
-            {state?.NFTs?.map((token, index) => (
-              <Tr
-                cellColor={index % 2 === 1 && "rgba(13, 148, 136, 0.05)"}
-                style={{
-                  borderRadius:
-                    index === state?.NFTs?.length - 1 ? "0 0 10px 10px" : "",
-                }}
-              >
-                <td>{index + 1}</td>
-                <td>{token.name}</td>
-                <td>{token.symbol}</td>
-                <td>{token.price}</td>
-                <td>{token.change}</td>
-              </Tr>
-            ))}
-          </tbody>
-        </table>
-      </Table>
+      {state.NFTs?.map((token, index) => (
+        <div
+          className={index}
+          style={{
+            width: "33.33333%",
+            padding: "10px",
+            borderRadius: "50px",
+            overflow: "hidden",
+          }}
+        >
+          <img
+            src={token.image}
+            alt={`NFT of ${token.title}`}
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </div>
+      ))}
     </Container>
   </Wrapper>
 );
