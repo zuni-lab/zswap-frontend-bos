@@ -116,11 +116,11 @@ return (
       </MenuItem>
       <MenuItem
         onClick={() => {
-          props.updatePage("account");
+          props.updatePage("nfts");
         }}
-        active={props.page === "account"}
+        active={props.page === "nfts"}
       >
-        My Account
+        NFTs
       </MenuItem>
     </MenuItemWrapper>
   </NavigationWrapper>

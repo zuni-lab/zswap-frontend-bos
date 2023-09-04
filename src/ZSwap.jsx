@@ -91,6 +91,12 @@ const RouterRecords = {
     description: "View tokens",
     path: "widget/ZSwap.Page.Tokens.Tokens",
   },
+  nfts: {
+    name: "nfts",
+    title: "NFTs",
+    description: "View NFTs",
+    path: "widget/ZSwap.Page.NFTs.NFTs",
+  },
 };
 
 State.init({
@@ -165,6 +171,25 @@ const TokenView = () => {
   );
 };
 
+const NFTView = () => {
+  return (
+    <Container>
+      <Widget
+        src={`${config.ownerId}/widget/ZSwap.Element.TitleAndDescription`}
+        props={{
+          title: RouterRecords.nfts.title,
+          description: RouterRecords.nfts.description,
+          config: config,
+        }}
+      />
+      <Widget
+        src={`${config.ownerId}/${RouterRecords.nfts.path}`}
+        props={{ config }}
+      />
+    </Container>
+  );
+};
+
 function getBody() {
   switch (state.page) {
     case RouterRecords.swap.name:
@@ -173,6 +198,8 @@ function getBody() {
       return <PoolView />;
     case RouterRecords.tokens.name:
       return <TokenView />;
+    case RouterRecords.nfts.name:
+      return <NFTView />;
   }
 }
 
