@@ -15,6 +15,14 @@ const MAX_TICK = 887272;
 const MIN_PRICE = Math.pow(1.0001, MIN_TICK);
 const MAX_PRICE = Math.pow(1.0001, MAX_TICK);
 
+/**Global variables */
+/**Global variable */
+
+const ACCOUNT_ID = context.accountId;
+const MANAGER_CONTRACT_ID = "manager3.zswap.testnet";
+const FACTORY_CONTRACT_ID = "factory3.zswap.testnet";
+const DEPOSIT_MSG = '{"approve":{"account_id":"manager3.zswap.testnet"}}';
+
 /** State */
 State.init({
   firstSelectedToken: {
@@ -77,7 +85,7 @@ function initFetchListOfSampleTokens() {
 const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
 const poolMetadata =
   state.firstSelectedToken.symbol && state.secondSelectedToken.symbol
-    ? Near.view("factory2.zswap.testnet", "get_pool", {
+    ? Near.view(FACTORY_CONTRACT_ID, "get_pool", {
         token_0: state.TOKENS[state.firstSelectedToken.symbol]?.address ?? "",
         token_1: state.TOKENS[state.secondSelectedToken.symbol]?.address ?? "",
         fee: fee_descriptions[state.fee_chosen][0] * Math.pow(10, 4),
@@ -300,9 +308,8 @@ const getPriceOfTokenIfNeeded = (token) => {
 };
 
 const getTokenBalanceOfUser = (token) => {
-  const accountId = context.accountId;
   return Near.asyncView(state.TOKENS[token].address, "ft_balance_of", {
-    account_id: accountId,
+    account_id: ACCOUNT_ID,
   })
     .catch((err) => 0)
     .then((bl) =>
@@ -491,6 +498,9 @@ const ChooseFeeForm = (
         class="toggle_fee_choices"
         onClick={() => {
           State.update({ show_fee_choices: !state.show_fee_choices });
+        }}
+        style={{
+          color: "#4338ca",
         }}
       >
         {state.show_fee_choices ? "Hide" : "Show"}
@@ -777,7 +787,7 @@ const updateAmount1BasedOnAmount0 = () => {
 
   if (poolMetadata)
     Near.asyncView(
-      "manager.zswap.testnet",
+      MANAGER_CONTRACT_ID,
       isReversedDirection
         ? "calculate_amount_0_with_amount_1"
         : "calculate_amount_1_with_amount_0",
@@ -834,7 +844,7 @@ const updateAmount0BasedOnAmount1 = () => {
 
   if (poolMetadata)
     Near.asyncView(
-      "manager.zswap.testnet",
+      MANAGER_CONTRACT_ID,
       isReversedDirection
         ? "calculate_amount_1_with_amount_0"
         : "calculate_amount_0_with_amount_1",
@@ -870,7 +880,7 @@ const depositFirstToken = () => {
       amount: Big(state.firstSelectedToken.amount)
         .mul(Big(Math.pow(10, 24)))
         .toFixed(),
-      msg: "",
+      msg: DEPOSIT_MSG,
     },
     300000000000000,
     1
@@ -885,7 +895,7 @@ const depositSecondToken = () => {
       amount: Big(state.secondSelectedToken.amount)
         .mul(Big(Math.pow(10, 24)))
         .toFixed(),
-      msg: "",
+      msg: DEPOSIT_MSG,
     },
     300000000000000,
     1
@@ -1216,7 +1226,16 @@ const ChoosePriceRangeForm = (
         {poolMetadata ? (
           <>
             Current price:{" "}
-            <span class="price">{currentPriceBig.round(10).toString()}</span>
+            <span
+              class="price"
+              style={{
+                fontSize: "20px",
+                color: "#4338ca",
+                fontWeight: 700,
+              }}
+            >
+              {currentPriceBig.round(10).toString()}
+            </span>
           </>
         ) : (
           "Pool not created"
@@ -1390,7 +1409,6 @@ const ChoosePriceRangeForm = (
 /////////////////////////////////////////////////////////////////////////////////
 
 const childSrc = context.networkId;
-const accountId = context.accountId;
 
 const NewPositionButton = (
   <Widget
@@ -1612,7 +1630,7 @@ const provideLiquidity = () => {
     : getUpperTick(state.priceRange.highPrice).toNumber();
 
   Near.call(
-    "manager.zswap.testnet",
+    MANAGER_CONTRACT_ID,
     "mint",
     {
       params: {
@@ -1800,7 +1818,7 @@ return (
       }}
     >
       {connectWallet() &&
-        (accountId ? (
+        (ACCOUNT_ID ? (
           !state.showDialog && NewPositionButton
         ) : (
           <Widget
