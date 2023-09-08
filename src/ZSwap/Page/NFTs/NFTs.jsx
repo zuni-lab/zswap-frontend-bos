@@ -30,7 +30,11 @@ const Card = styled.div`
   padding: 10px;
   border-radius: 50px;
   overflow: hidden;
+<<<<<<< HEAD
   background-color: rgba(0, 0, 0, 0.01);
+=======
+  background-color: rgba(0, 0, 0, 0.05);
+>>>>>>> main
   border-radius: 10px;
   border: 2px solid #ddd;
   display: flex;
@@ -45,7 +49,11 @@ const Button = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
+<<<<<<< HEAD
   background-color: ${props.background ?? "#333"};
+=======
+  background-color: ${props.background ?? "#2BCC91"};
+>>>>>>> main
   color: white;
   border-radius: 10px;
   font-weight: bold;
@@ -94,7 +102,6 @@ function fetchListOfNFT() {
 }
 
 function burnNFT(tokenId) {
-  console.log({ tokenId });
   return Near.call(
     SMART_CONTRACT_ID,
     "burn",
