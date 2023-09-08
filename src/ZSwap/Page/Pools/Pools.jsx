@@ -198,7 +198,8 @@ const Main = styled.div`
   padding: 40px;
   border-radius: 10px;
   //shadow-xl
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
   color: black;
 `;
@@ -373,14 +374,14 @@ const onFirstTokenChange = (token) => {
     firstSelectedToken: {
       ...state.firstSelectedToken,
       symbol: token,
-      amount: 0,
+      amount: "",
       balance: 0,
     },
     ...(token === state.secondSelectedToken.symbol && {
       secondSelectedToken: {
         ...state.secondSelectedToken,
         symbol: prevFirst,
-        amount: 0,
+        amount: "",
         balance: 0,
       },
     }),
@@ -396,14 +397,14 @@ const onSecondTokenChange = (token) => {
     secondSelectedToken: {
       ...state.secondSelectedToken,
       symbol: token,
-      amount: 0,
+      amount: "",
       balance: 0,
     },
     ...(token === state.firstSelectedToken.symbol && {
       firstSelectedToken: {
         ...state.firstSelectedToken,
         symbol: prevSecond,
-        amount: 0,
+        amount: "",
         balance: 0,
       },
     }),
