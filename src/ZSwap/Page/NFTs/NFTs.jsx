@@ -30,7 +30,11 @@ const Card = styled.div`
   padding: 10px;
   border-radius: 50px;
   overflow: hidden;
+<<<<<<< HEAD
+  background-color: rgba(0, 0, 0, 0.01);
+=======
   background-color: rgba(0, 0, 0, 0.05);
+>>>>>>> main
   border-radius: 10px;
   border: 2px solid #ddd;
   display: flex;
@@ -45,7 +49,11 @@ const Button = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
+<<<<<<< HEAD
+  background-color: ${props.background ?? "#333"};
+=======
   background-color: ${props.background ?? "#2BCC91"};
+>>>>>>> main
   color: white;
   border-radius: 10px;
   font-weight: bold;
@@ -67,6 +75,11 @@ const Button = styled.button`
   }
 `;
 
+/**Global variable */
+
+const ACCOUNT_ID = context.accountId;
+const SMART_CONTRACT_ID = "manager3.zswap.testnet";
+
 /** State */
 State.init({
   NFTs: [],
@@ -74,12 +87,12 @@ State.init({
 /** side effect function */
 
 function fetchListOfNFT() {
-  return Near.asyncView("manager.zswap.testnet", "nft_tokens_for_owner", {
-    account_id: "traderz.testnet",
-    fee: 3000,
+  return Near.asyncView(SMART_CONTRACT_ID, "nft_tokens_for_owner", {
+    account_id: ACCOUNT_ID,
   }).then((res) => {
     return res.map((item) => {
       return {
+        id: item.token_id,
         title: item.metadata.title,
         description: item.metadata.description,
         image: item.metadata.media,
@@ -88,10 +101,23 @@ function fetchListOfNFT() {
   });
 }
 
+function burnNFT(tokenId) {
+  return Near.call(
+    SMART_CONTRACT_ID,
+    "burn",
+    {
+      nft_id: tokenId,
+    },
+    300000000000000
+  ).then((res) => {
+    console.log({ res });
+    return res;
+  });
+}
+
 const $fetchListOfNFT = () => {
   fetchListOfNFT().then((res) => {
-    const array = Array(10).fill(res[0]);
-    State.update({ NFTs: array });
+    State.update({ NFTs: res });
   });
 };
 
@@ -115,7 +141,7 @@ return (
         <div
           style={{
             padding: "20px 10px",
-            width: "33.333333%",
+            width: "25%",
           }}
         >
           <Card key={index}>
@@ -126,8 +152,9 @@ return (
                 width: "100%",
                 height: "100%",
               }}
+              objectFit="cover"
             />
-            <Button>Burn</Button>
+            <Button onClick={() => burnNFT(token.id)}>Burn</Button>
           </Card>
         </div>
       ))}

@@ -79,6 +79,10 @@ const ArrowWrapper = styled.div`
   }
 `;
 
+/** Global variables */
+const ACCOUNT_ID = context.accountId;
+const MANAGER_CONTRACT_ID = "manager3.zswap.testnet";
+const FACTORY_CONTRACT_ID = "factory3.zswap.testnet";
 /** State */
 State.init({
   firstSelectedToken: {
@@ -157,9 +161,8 @@ function fetchTokenMetadata(tokenIndex, currentTOKENS) {
   });
 }
 const getTokenBalanceOfUser = (address) => {
-  const accountId = context.accountId;
   return Near.asyncView(address, "ft_balance_of", {
-    account_id: accountId,
+    account_id: ACCOUNT_ID,
   })
     .catch((err) => {
       console.log(err);
@@ -194,7 +197,7 @@ function $fetchTokenBalance(tokenIndex) {
 }
 
 const $getPoolTokens = (firstTokenAddress, secondTokenAddress) => {
-  return Near.asyncView("factory2.zswap.testnet", "get_pool", {
+  return Near.asyncView(FACTORY_CONTRACT_ID, "get_pool", {
     token_0: firstTokenAddress,
     token_1: secondTokenAddress,
     fee: 3000,
@@ -337,12 +340,6 @@ const onSecondTokenChange = (token) => {
 };
 
 const handleSwap = () => {
-  //   $ ZNEAR_AMOUNT=100
-
-  // $ SWAP_MSG='{\"swap_single\":{\"token_out\":\"'$ZUSD'\",\"fee\":3000}}'
-
-  // $ near call $ZNEAR ft_transfer_call '{"receiver_id":"'$ZSWAP_MANAGER'", "amount":"'$ZNEAR_AMOUNT'", "msg":"'$SWAP_MSG'"}' --gas 300000000000000 --accountId $TRADER --depositYocto 1
-
   const firsTokenAddress =
     state.tokenRecords[state.firstSelectedToken.symbol].address;
   const secondTokenAddress =
@@ -351,7 +348,7 @@ const handleSwap = () => {
     firsTokenAddress,
     "ft_transfer_call",
     {
-      receiver_id: "manager.zswap.testnet",
+      receiver_id: MANAGER_CONTRACT_ID,
       amount: Big(state.firstSelectedToken.amount).mul(1e24).toFixed(),
       msg: JSON.stringify({
         swap_single: {

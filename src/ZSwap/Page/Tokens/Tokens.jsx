@@ -9,8 +9,7 @@ const Wrapper = styled.div`
   padding: 20px;
   border-radius: 10px;
   //shadow-xl
-  box-shadow:
-    0 20px 25px -5px rgb(0 0 0 / 0.1),
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
   color: black;
 `;
@@ -157,7 +156,6 @@ function initFetchListOfSampleTokens() {
 }
 
 const TOKEN_ACCOUNTS = Near.view(ZSWAP_FACTORY, "get_tokens") ?? [];
-console.log(TOKEN_ACCOUNTS);
 function fetchTokenMetadata(tokenIndex, currentTOKENS) {
   const tokenAddress = TOKEN_ACCOUNTS[tokenIndex];
   Near.asyncView(tokenAddress, "ft_metadata", {}).then((tokenMetadata) => {
@@ -191,8 +189,6 @@ if (!state.fetchedTokensList && TOKEN_ACCOUNTS.length > 0) {
   });
   $fetchTokenMetadata();
 }
-
-console.log(state);
 
 return (
   <Wrapper>
