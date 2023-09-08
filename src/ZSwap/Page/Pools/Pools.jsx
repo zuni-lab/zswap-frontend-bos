@@ -84,7 +84,7 @@ function initFetchListOfSampleTokens() {
     });
 }
 
-const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
+const TOKEN_ACCOUNTS = Near.view(ZSWAP_FACTORY, "get_tokens") ?? [];
 const poolMetadata =
   state.firstSelectedToken.symbol && state.secondSelectedToken.symbol
     ? Near.view(ZSWAP_FACTORY, "get_pool", {
@@ -174,7 +174,7 @@ const refetchTokenMetadata = (address) => {
     return tokenMetadata.symbol;
   });
 };
-if (!state.fetchedTokensList) {
+if (!state.fetchedTokensList && TOKEN_ACCOUNTS.length > 0) {
   State.update({
     fetchedTokensList: true,
   });
