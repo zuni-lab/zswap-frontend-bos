@@ -83,7 +83,7 @@ function initFetchListOfSampleTokens() {
     });
 }
 
-const TOKEN_ACCOUNTS = ["zusd.zswap.testnet", "znear.zswap.testnet"];
+const TOKEN_ACCOUNTS = Near.view(ZSWAP_FACTORY, "get_tokens") ?? [];
 const poolMetadata =
   state.firstSelectedToken.symbol && state.secondSelectedToken.symbol
     ? Near.view(ZSWAP_FACTORY, "get_pool", {
@@ -134,6 +134,8 @@ function fetchTokenMetadata(tokenIndex, currentTOKENS) {
       ...tokenMetadata,
       address: tokenAddress,
       priceInUSD: 0,
+      icon: tokenMetadata?.icon ?? DEFAULT_LOGO,
+      logo: tokenMetadata?.icon ?? DEFAULT_LOGO,
     };
 
     if (tokenIndex >= TOKEN_ACCOUNTS.length - 1) {
@@ -171,7 +173,7 @@ const refetchTokenMetadata = (address) => {
     return tokenMetadata.symbol;
   });
 };
-if (!state.fetchedTokensList) {
+if (!state.fetchedTokensList && TOKEN_ACCOUNTS.length > 0) {
   State.update({
     fetchedTokensList: true,
   });
@@ -1653,9 +1655,10 @@ const createPool = () => {
       sqrt_price_x96: DEFAULT_SQRT_PRICE_X96,
     },
     300000000000000,
-    Math.pow(10, 23)
+    Math.pow(10, 24) * 25
   );
 };
+
 const provideLiquidity = () => {
   const isReversedDirection =
     poolMetadata &&
