@@ -3,6 +3,37 @@ const Container = styled.div`
   gap: 16px;
   position: relative;
   width: ${(props) => props.width ?? "100%"};
+
+  .custom_input_container {
+    display: flex;
+    gap: 2px;
+  }
+  .custom_input_container .custom_input {
+    width: 100%;
+    transition: opacity 0.2s ease-in-out 0s;
+    text-align: left;
+    color: rgb(13, 17, 28);
+    font-weight: 400;
+    outline: none;
+    border: medium;
+    flex: 1 1 auto;
+    background-color: transparent;
+    font-size: 16px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    appearance: textfield;
+    padding: 5px;
+  }
+
+  .custom_input_container .choose_btn {
+    font-size: 20px;
+    width: 40px;
+    line-height: 38px;
+    border: none;
+    border-radius: 5px;
+    background: #198754;
+    color: white;
+  }
 `;
 
 const SelectBody = styled.div`
@@ -79,6 +110,7 @@ const Span = styled.span`
 
 State.init({
   showList: false,
+  customInputValue: "",
 });
 
 const selectedItem = props.list.find(
@@ -136,6 +168,47 @@ return (
       }}
       bottom={props?.bottom}
     >
+      {props?.enableCustomInput && (
+        <div className="custom_input_container">
+          <input
+            key="custom_input"
+            className="custom_input"
+            inputmode="decimal"
+            autocomplete="off"
+            autocorrect="off"
+            type="text"
+            pattern="^[0-9]*[.,]?[0-9]*$"
+            placeholder="0"
+            minlength="1"
+            maxlength="20"
+            spellcheck="false"
+            value={state.customInputValue}
+            // onKeyDown={(e) => {
+            //   if (e.key == "Enter") {
+            //     e.preventDefault();
+            //     props?.onSubmitCustomInputValue(state.customInputValue);
+            //   }
+            // }}
+            onChange={(e) => {
+              State.update({
+                customInputValue: e.target.value,
+              });
+            }}
+          />
+          <button
+            className="choose_btn"
+            onClick={() => {
+              props?.onSubmitCustomInputValue(state.customInputValue);
+              State.update({
+                customInputValue: "",
+                showList: false,
+              });
+            }}
+          >
+            +
+          </button>
+        </div>
+      )}
       {otherItems.map(({ value, icon }) => (
         <LogoWithText
           onClick={() => {
