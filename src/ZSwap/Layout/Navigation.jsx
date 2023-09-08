@@ -108,19 +108,19 @@ return (
       </MenuItem>
       <MenuItem
         onClick={() => {
-          props.updatePage("tokens");
-        }}
-        active={props.page === "tokens"}
-      >
-        Tokens
-      </MenuItem>
-      <MenuItem
-        onClick={() => {
           props.updatePage("nfts");
         }}
         active={props.page === "nfts"}
       >
         NFTs
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          props.updatePage("tokens");
+        }}
+        active={props.page === "tokens"}
+      >
+        Tokens
       </MenuItem>
     </MenuItemWrapper>
   </NavigationWrapper>

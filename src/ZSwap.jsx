@@ -100,7 +100,7 @@ const RouterRecords = {
 };
 
 State.init({
-  page: RouterRecords.nfts.name,
+  page: RouterRecords.swap.name,
   unstakeInfo: {},
 });
 

@@ -72,8 +72,6 @@ const Button = styled.button`
 const ACCOUNT_ID = context.accountId;
 const SMART_CONTRACT_ID = "manager3.zswap.testnet";
 
-console.log({ ACCOUNT_ID });
-
 /** State */
 State.init({
   NFTs: [],
@@ -83,10 +81,8 @@ State.init({
 function fetchListOfNFT() {
   return Near.asyncView(SMART_CONTRACT_ID, "nft_tokens_for_owner", {
     account_id: ACCOUNT_ID,
-    fee: 3000,
   }).then((res) => {
     return res.map((item) => {
-      console.log({ item });
       return {
         id: item.token_id,
         title: item.metadata.title,
