@@ -9,7 +9,8 @@ const Wrapper = styled.div`
   padding: 20px;
   border-radius: 10px;
   //shadow-xl
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
     0 8px 10px -6px rgb(0 0 0 / 0.1);
   color: black;
 `;
@@ -90,16 +91,18 @@ State.init({
     { name: "Token 4", symbol: "TKN4", price: 4.0, change: 0.4 },
     { name: "Token 5", symbol: "TKN5", price: 5.0, change: 0.5 },
   ],
+  TOKENS: {},
+  fetchedTokensList: false,
 });
 /** side effect function */
 
-function $fetchListOfNFT() {
-  const res = Near.asyncView("manager.zswap.testnet", "nft_tokens_for_owner", {
-    account_id: "traderz.testnet",
-    fee: 3000,
-  });
-  console.log({ res });
-}
+// function $fetchListOfNFT() {
+//   const res = Near.asyncView("manager.zswap.testnet", "nft_tokens_for_owner", {
+//     account_id: "traderz.testnet",
+//     fee: 3000,
+//   });
+//   console.log({ res });
+// }
 
 /**
  *
@@ -111,7 +114,81 @@ function $fetchListOfNFT() {
 /** Handle events  */
 
 /** Call function */
-$fetchListOfNFT();
+// $fetchListOfNFT();
+
+const TOKEN_SUFFIX = ".zswap.testnet";
+const ZSWAP_MANAGER = "manager3.zswap.testnet";
+const ZSWAP_FACTORY = "factory3.zswap.testnet";
+
+function initFetchListOfSampleTokens() {
+  return asyncFetch(
+    "https://raw.githubusercontent.com/galin-chung-nguyen/efiquant/main/utility/binance-coin-trading/binanceSymbolsInfo.json"
+  )
+    .then((res) => JSON.parse(res.body))
+    .then((TOKEN_RECORDS) => {
+      const TOKENS = {};
+
+      Object.keys(TOKEN_RECORDS).forEach((pair) => {
+        if (pair.slice(-4) === "USDT") {
+          const tokenSymbol = pair.slice(0, -5);
+          if (tokenSymbol) {
+            if (
+              ["ETH", "BTC", "ADA", "NEAR", "BSC", "DOT", "LINK"].includes(
+                tokenSymbol.toUpperCase()
+              )
+            )
+              TOKENS[tokenSymbol] = {
+                ...TOKEN_RECORDS[pair],
+                symbol: tokenSymbol,
+                decimals: 20,
+                address: tokenSymbol + ".zswap.testnet",
+                name: TOKEN_RECORDS[pair].assetName,
+                icon: TOKEN_RECORDS[pair].logo,
+                priceInUSD: -1,
+              };
+          }
+        }
+      });
+
+      return TOKENS;
+    });
+}
+
+const TOKEN_ACCOUNTS = Near.view(ZSWAP_FACTORY, "get_tokens") ?? [];
+console.log(TOKEN_ACCOUNTS);
+function fetchTokenMetadata(tokenIndex, currentTOKENS) {
+  const tokenAddress = TOKEN_ACCOUNTS[tokenIndex];
+  Near.asyncView(tokenAddress, "ft_metadata", {}).then((tokenMetadata) => {
+    currentTOKENS[tokenMetadata.symbol] = {
+      ...tokenMetadata,
+      address: tokenAddress,
+      priceInUSD: 0,
+    };
+
+    if (tokenIndex >= TOKEN_ACCOUNTS.length - 1) {
+      // last token
+      State.update({
+        TOKENS: currentTOKENS,
+      });
+    } else {
+      fetchTokenMetadata(tokenIndex + 1, currentTOKENS);
+    }
+  });
+}
+function $fetchTokenMetadata() {
+  initFetchListOfSampleTokens().then((sampleTokens) => {
+    fetchTokenMetadata(0, sampleTokens);
+  });
+}
+
+if (!state.fetchedTokensList && TOKEN_ACCOUNTS.length > 0) {
+  State.update({
+    fetchedTokensList: true,
+  });
+  $fetchTokenMetadata();
+}
+
+console.log(state);
 
 return (
   <Wrapper>
@@ -121,14 +198,13 @@ return (
           <thead>
             <tr>
               <th>No</th>
+              <th>Logo</th>
               <th>Name</th>
               <th>Symbol</th>
-              <th>Pice</th>
-              <th>Change</th>
             </tr>
           </thead>
           <tbody>
-            {state?.NFTs?.map((token, index) => (
+            {Object.keys(state.TOKENS).map((token, index) => (
               <Tr
                 cellColor={index % 2 === 1 && "rgba(13, 148, 136, 0.05)"}
                 style={{
@@ -137,10 +213,16 @@ return (
                 }}
               >
                 <td>{index + 1}</td>
-                <td>{token.name}</td>
-                <td>{token.symbol}</td>
-                <td>{token.price}</td>
-                <td>{token.change}</td>
+                <td>
+                  <img
+                    src={state.TOKENS[token].icon}
+                    width={24}
+                    height={24}
+                    alt={token}
+                  />
+                </td>
+                <td>{state.TOKENS[token].name}</td>
+                <td>{state.TOKENS[token].symbol}</td>
               </Tr>
             ))}
           </tbody>
